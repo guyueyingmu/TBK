@@ -483,6 +483,9 @@ class Base extends Controller{
 		//$this->error();
 
 
+		return;
+
+
 		$wxCfg=Session::get('wx');
 		$obj=new WX($wxCfg);
 
