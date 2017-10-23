@@ -390,7 +390,7 @@ class WeChat{
 		$originId=empty($originId)?$this->originId:$originId;
 
 		$mdl=Loader::model('User');
-		$user=$mdl->getInfo(['where'=>['openId'=>$openId,'originId'=>$this->originId]]);
+		$user=$mdl->getInfo(['where'=>['originId'=>$originId,'openId'=>$openId]]);
 
 		if(empty($user)){
 			$userInfo=$this->getUserInfo($openId);
