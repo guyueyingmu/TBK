@@ -14,7 +14,7 @@ class Base extends Controller{
 
 	private $oAuthState='oAuthState';
 	private $noLogin=[
-		'base'=>['login','loginSubmit','logout','weChatCgi','getSession','getCache','cleanCache','error','clearSession','lgk','tstx'],
+		'base'=>['login','loginSubmit','logout','weChatCgi','getSession','getCache','clearCache','error','clearSession','lgk','tstx'],
 		'client'=>[
 			'index'=>['index','tst'],
 		],
