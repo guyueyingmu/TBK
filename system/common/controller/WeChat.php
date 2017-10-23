@@ -95,13 +95,17 @@ class WeChat{
 			'FromUserName'=>$postData['ToUserName'],
 		);
 
-		if(isset($postData['EventKey'])&&substr($postData['EventKey'],0,8)=='qrscene_'){
-			$qrScene=substr($postData['EventKey'],8);
-			$mdl=Loader::model('User');
-			$mdl->edit(['where'=>['originId'=>$this->originId,'openId'=>$postData['FromUserName']],'data'=>['qrScene'=>$qrScene]]);
+		$whereAry=['originId'=>$this->originId,'openId'=>$postData['FromUserName']];
+		$saveData=['subscribe'=>1];
+
+		if(isset($postData['EventKey'])&&!empty($postData['EventKey'])&&substr($postData['EventKey'],0,8)=='qrscene_'){
+			$data['qrScene']=substr($postData['EventKey'],8);
 		}
 
-		$responseData['Content']='欢迎关注 '.$this->getConfig('name').'！';
+		$mdl=Loader::model('User');
+		$mdl->edit(['where'=>$whereAry,'data'=>$saveData]);
+
+		$responseData['Content']='欢迎关注【'.$this->getConfig('name').'】';
 		return $this->textResponse($responseData);
 	}
 
