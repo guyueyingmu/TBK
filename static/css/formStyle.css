@@ -1,0 +1,61 @@
+.form-group label{
+	padding-left:0px;
+}
+
+.form-group .col-xs-3{
+	width:30%;
+}
+
+.marginLeft {
+	margin-left: 5px;
+}
+
+.form-group .col-xs-5{
+	width:41.6667%;
+}
+
+.form-group .msg{
+	padding-top:7px;
+}
+
+/*tfoot .page .pgNavigation{
+	padding:2px 5px;
+	border-radius:10px;
+	border:1px solid #E6E6E6;
+}
+
+tfoot .page .pgNavigation:hover{
+	border-radius:10px;
+	border:1px solid #04408C;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+tfoot .page .pgInfo{
+	display:inline-block;
+    margin:3px auto;
+}
+
+tfoot .page .pgNavigation.pgPre{
+	float:left;
+}
+
+tfoot .page .pgNavigation.pgNxt{
+	float:right;
+}
+
+.dvNav{
+	margin:5px 10px 10px 0px;
+}
+
+.dvNav .clear{
+	clear:both;
+}
+
+.dvNav .leftAlign{
+	margin-left:10px;
+}
+
+.dvNav .rightAlign{
+	margin-right:10px;
+}*/

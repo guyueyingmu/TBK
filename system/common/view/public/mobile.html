@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<meta charset='UTF-8'>
+	<title>沧州帮帮物流</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no'>
+	<meta name='apple-mobile-web-app-capable' content='yes'>
+	<meta name='format-detection' content='telephone=no'>
+	<meta name='apple-mobile-web-app-status-bar-style' content='black'>
+	<link rel='stylesheet' href='__STATIC__/plugin/mui/mui.min.css'>
+	<link rel='stylesheet' href='__STATIC__/plugin/mui/mui.picker.min.css'>
+	<link rel='stylesheet' href='__STATIC__/plugin/swiper/swiper.min.css'>
+	<block name='link'></block>
+	<style type='text/css'>
+		*{
+			margin:0px;
+			padding:0px;
+		}
+
+	    body{
+		    background-color:#def0fa;
+            font-size:14px;
+            text-align:justify;
+	    }
+
+	    header{
+	    	display:none;
+	    	background-color:#1296db !important;
+	    }
+
+	    header .mui-action-back{
+			background-image:url(__STATIC__/img/goBack.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+			height:24px;
+			margin-top:10px;
+			margin-left:5px !important;
+			display:none;
+		}
+
+		header .mui-title{
+			color:#fff !important;
+			font-weight:bold;
+		}
+
+		header .mui-pull-right{
+			font-weight:normal;
+		    color:#fff;
+		    font-size:16px !important;
+		    line-height:28px;
+		}
+
+		footer.mui-bar{
+			background-color:#fff;
+		}
+
+		footer .mui-tab-label{
+			height:20px;
+			line-height:24px;
+			font-size:12px !important;
+		}
+
+		footer .mui-tab-item.mui-active{
+			color:#1296db !important;
+		}
+
+		.mui-content{
+			background-color:transparent;
+		}
+
+		.mui-scroll-wrapper{
+			margin-top:44px;
+			margin-bottom:50px;
+		}
+
+		.mui-table-view{
+			background-color:transparent;
+		}
+
+		.mui-table-view-cell:after{
+			right:15px;
+		}
+
+		.mui-table-view-cell.mui-active,.mui-table-view-cell a:first-child.mui-active{
+			background-color:initial !important;
+		}
+
+		.mui-navigate-right:after{
+			content:' ';
+			height:18px;
+			width:10px;
+			background-image:url(__STATIC__/img/listArrow.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		#receive .mui-icon{
+			background-image:url(__STATIC__/img/footerReceive.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		#receive.mui-active .mui-icon{
+			background-image:url(__STATIC__/img/footerReceiveActive.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		#order .mui-icon{
+			background-image:url(__STATIC__/img/footerOrder.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		#order.mui-active .mui-icon{
+			background-image:url(__STATIC__/img/footerOrderActive.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		#sent .mui-icon{
+			background-image:url(__STATIC__/img/footerSent.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		#sent.mui-active .mui-icon{
+			background-image:url(__STATIC__/img/footerSentActive.png);
+			background-repeat:no-repeat;
+			background-size:contain;
+		}
+
+		.swiper-pagination{
+			text-align:right;
+		}
+
+		#loading{
+			position:fixed;
+			top:0;
+			width:100%;
+			height:100%;
+			background:rgba(0,0,0,0.5);
+			z-index:99;
+		}
+
+		#loading img{
+			width:44% !important;
+			top:0px;
+			bottom:0px;
+			left:0px;
+			right:0px;
+			margin:auto;
+			position:absolute;
+		}
+
+		<block name='style'></block>
+	</style>
+</head>
+
+<body>
+	<header class='mui-bar mui-bar-nav'>
+		<a class='mui-action-back mui-icon mui-pull-left'><block name='goBack'>&nbsp;</block></a>
+		<block name='header'>
+		<h1 class='mui-title'><block name='title'>帮帮物流</block></h1>
+		</block>
+		<a class='mui-icon mui-pull-right'><block name='operate'>&nbsp;</block></a>
+	</header>
+
+	<block name='footer'>
+		<footer class='mui-bar mui-bar-tab'>
+			<a id='receive' href='javascript:void(0);' data-href='{$Request.root}?s=/{$Request.module}/Receive/index' class='mui-tab-item'>
+				<span class='mui-icon'>&nbsp;</span>
+				<span class='mui-tab-label'>帮帮拿件</span>
+			</a>
+			<a id='sent' href='javascript:void(0);' data-href='{$Request.root}?s=/{$Request.module}/Sent/index' class='mui-tab-item'>
+				<span class='mui-icon'>&nbsp;</span>
+				<span class='mui-tab-label'>帮帮发件</span>
+			</a>
+			<a id='order' href='javascript:void(0);' data-href='{$Request.root}?s=/{$Request.module}/Order/index' class='mui-tab-item'>
+				<span class='mui-icon'>&nbsp;</span>
+				<span class='mui-tab-label'>我的订单</span>
+			</a>
+		</footer>
+	</block>
+
+    <div class='mui-content'>
+    	<block name='scroll'>
+	    	<div class='mui-scroll-wrapper'>
+				<div class='mui-scroll'>
+					<block name='content'></block>
+	    		</div>
+	    	</div>
+    	</block>
+    </div>
+
+    <block name='body'></block>
+
+    <div id='loading'>
+		<img src='__STATIC__/img/loading.gif'>
+	</div>
+    <input type='hidden' id='activeItem' value='{$activeItem|default=$Request.controller|lcfirst}'>
+</body>
+
+<script type='text/javascript' src='__STATIC__/plugin/mui/mui.min.js'></script>
+<script type='text/javascript' src='__STATIC__/plugin/mui/mui.picker.min.js'></script>
+<script type='text/javascript' src='__STATIC__/plugin/jquery.min.js'></script>
+<script type='text/javascript' src='__STATIC__/plugin/swiper/swiper.jquery.min.js'></script>
+<script type='text/javascript' src='//as.alipayobjects.com/g/component/antbridge/1.1.1/antbridge.min.js'></script>
+<script type='text/javascript' src='//res.wx.qq.com/open/js/jweixin-1.0.0.js'></script>
+
+<block name='js'></block>
+
+<script type='text/javascript'>
+	var BBL={
+		scrollObj:null,
+		mobileVerify:function(mobile){
+			if(mobile==''){
+				return false;
+			}
+			else if(/^(13[0-9]|14[0-9]|15[0-9]|17[0-9]|18[0-9])\d{8}$/i.test(mobile)||/^((0\d{2,3})-?)(\d{7,8})(-?(\d{3,}))?$/.test(mobile)){
+				return true;
+			}
+			return false;
+		},
+
+		getRandNumber:function(min,max){
+			var tmp=max-min;
+			return parseInt(Math.random()*tmp+min,10)
+		},
+
+		init:function(){
+			var self=this;
+			$('.mui-content').css('min-height',$(window).height()+'px');
+			self.scrollObj=mui('.mui-scroll-wrapper').scroll({
+				indicators:true
+			});
+
+			var activeItemId=$('#activeItem').val();
+			var $activeItem=$('footer #'+activeItemId);
+			if($activeItem.length==1){
+				$('footer .mui-tab-item.mui-active').removeClass('mui-active');
+				$activeItem.addClass('mui-active');
+			}
+
+			wx.config({
+			    debug:false,
+			    appId:'{$weChatCfg.appId}',
+			    timestamp:'{$weChatCfg.timestamp}',
+			    nonceStr:'{$weChatCfg.nonceStr}',
+			    signature:'{$weChatCfg.signature}',
+			    jsApiList:['hideMenuItems','hideAllNonBaseMenuItem','showMenuItems']
+			});
+
+			wx.ready(function(){
+				wx.showMenuItems({
+				    menuList:['menuItem:refresh','menuItem:profile','menuItem:addContact']
+				});
+				wx.hideMenuItems({
+					menuList:['menuItem:share:appMessage','menuItem:share:timeline','menuItem:share:qq','menuItem:share:weiboApp','menuItem:favorite','menuItem:share:facebook','menuItem:share:QZone','menuItem:copyUrl','menuItem:originPage','menuItem:openWithQQBrowser','menuItem:openWithSafari','menuItem:share:email','menuItem:share:brand']
+				});
+				wx.hideAllNonBaseMenuItem();
+			});
+
+			$('#loading').hide();
+		}
+	};
+
+	$(document).ready(function(){
+		BBL.init();
+	});
+
+
+	mui('.mui-bar-tab').on('tap','.mui-tab-item',function(){
+		if(this.childElementCount==0){
+			return false;
+		}
+	});
+
+	mui('footer').on('tap','.mui-tab-item',function(){
+		var href=$(this).attr('data-href');
+		if(href!=undefined){
+			window.location.href=window.location.origin+href;
+		}
+		return false;
+	});
+
+	<block name='script'></block>
+</script>
+
+</html>

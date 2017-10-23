@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>机器人</title>
+		<meta charset='utf-8'>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+		<link href='__STATIC__/plugin/bootstrap/bootstrap.min.css' rel='stylesheet' media='screen'>
+		<link rel='stylesheet' type='text/css' href='__STATIC__/css/login.css'>
+
+	</head>
+	<body>
+		<div class='body'>
+			<div class='info'>
+				<img src='__STATIC__/img/logo.png' style='width:200px;'>
+				<span>商家管理</span>
+				<div>触动你我  触动生活</div>
+			</div>
+			<div class='loginForm'>
+				<div class='loginHeader'></div>
+				<div class='loginBody'>
+					<div class='loginTitle'><h4><strong class='business on'>商家登陆</strong><!-- <strong class='agency'>代理登陆</strong> -->&nbsp;&nbsp;<small><!-- <a href='https://mp.weixin.qq.com/cgi-bin/readtemplate?t=home/find_pwd_tmpl&lang=zh_CN'>忘记密码？</a> --></small></h4></div>
+					<div class='loginContent'>
+						<div class='logining'></div>
+						<div class='loginItem msg'><i class='glyphicon glyphicon-info-sign'></i> <span id='loginMsg'>请输入用户名和密码</span></div>
+						<div class='loginItem'>
+							<input type='text' name='name' placeholder='' value='' />
+						</div>
+						<div class='loginItem' style='margin-top:21px;'>
+							<input type='password' name='pwd' value='' />
+						</div>
+						<div class='dvLogin loginItem' style='margin-top:30px;'>
+							<a id='login' class='btn btn-danger' href='javascript:void(0);'><strong>登 陆</strong></a>
+						</div>
+
+					</div>
+				</div>
+				<div class='loginFooter'>
+					<div class='rope left'></div>
+					<div class='rope right'></div>
+					<div class='regist'>
+						<span>有问题？请联系客服！</span>
+						<a class='btn btn-info' href='javascript:void(0);'>联系客服</a>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class='footer'>
+			2010-2017 TouchLink All Rights Reserved  <a href='javascript:void(0);'>机器人</a> 版权所有
+		</div>
+
+		<input type='hidden' id='submitUrl' value='{$Request.root}/{$Request.module}/{$Request.controller}/loginSubmit'/>
+	</body>
+
+	<script type='text/javascript' src='__STATIC__/plugin/jquery.min.js'></script>
+	<script type='text/javascript' src='__STATIC__/plugin/bootstrap/bootstrap.min.js'></script>
+	<script type='text/javascript' src='__STATIC__/js/login.js'></script>
+</html>

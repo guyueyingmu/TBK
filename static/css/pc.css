@@ -1,0 +1,344 @@
+#baseBody{
+	min-width:1024px;
+}
+
+#baseBody a{
+	text-decoration:none;
+}
+
+.rightAlign{
+	float:right;
+}
+
+.leftAlign{
+	float:left;
+}
+
+.clear{
+	clear:both;
+}
+
+.msg{
+	color:#FF0000;
+}
+
+hr.seporator{
+	background-image: url('../img/split.png');
+    border:medium none;
+    height:5px;
+    margin:0.75em;
+}
+
+/*内容框样式*/
+	.dvBox .boxContent{
+		padding:0px;
+	}
+
+	.dvBox .boxContentTable{
+		padding:5px;
+	}
+
+/*jQuery UI 弹框样式*/
+
+	.ui-dialog{
+		padding:0px;
+	}
+
+	.ui-dialog.ui-widget-content{
+		background:#FFFFFF;
+	}
+
+	/*jQuery UI 弹框头部样式*/
+	.ui-dialog .ui-widget-header{
+		border-radius:0px;
+		border-style:none;
+		border-bottom:1px solid #AAAAAA;
+		border-top-left-radius:4px;
+		border-top-right-radius:4px;
+	}
+	/*jQuery UI 弹框头部样式*/
+	.ui-dialog .ui-dialog-titlebar{
+		color:#000000;
+		font-size:14px;
+		padding:2px 5px;
+		background-image: -moz-linear-gradient(top,#EEEEEE,#FFFFFF,#EEEEEE);/* Firefox */
+		background-image: -webkit-linear-gradient(top,#EEEEEE,#EEEEEE,#EEEEEE); /* Saf4+, Chrome */
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#BEBEBE', GradientType='0'); /* IE*/
+	}
+
+	/*jQuery UI 弹框内容样式*/
+	.ui-dialog .ui-dialog-content p{
+		margin:0px;
+	}
+
+	.ui-dialog .ui-dialog-content p i.glyphicon{
+		color:#5BC0DE;
+		font-size:30px;
+		vertical-align:-5px;
+	}
+
+	/*jQuery UI 弹框底部样式*/
+	.ui-dialog div.ui-dialog-buttonpane{
+		margin-top:0px;
+		padding:2px 5px 1px 5px;
+		border-bottom-left-radius:4px;
+		border-bottom-right-radius:4px;
+	}
+
+	/*jQuery UI 弹框底部按钮样式*/
+	.ui-dialog div.ui-dialog-buttonpane button.ui-button{
+		margin:2px;
+	}
+
+	/*jQuery UI 弹框底部按钮文字样式*/
+	.ui-dialog div.ui-dialog-buttonpane button.ui-button span.ui-button-text{
+		padding:2px 5px;
+	}
+
+	.ui-timepicker-div dl{
+		text-align: left;
+	}
+	.ui-timepicker-div dl dt{
+		height: 20px;
+	}
+	.ui-timepicker-div dl dd{
+		margin: -19px 0 10px 45px;
+	}
+	.ui-datepicker .ui-datepicker-buttonpane{
+		margin:1.7em 0 0 !important;
+	}
+	.ui-datepicker .ui-datepicker-buttonpane button{
+		padding:0px 5px !important;
+	}
+
+/*框架顶部样式*/
+	#main-top{
+		height:60px;
+		background:url('../img/topBg.png');
+	}
+
+	#main-top .topLogo{
+		margin-left:50px;
+		height:100%;
+		width:300px;
+		background:url('../img/logo.png') no-repeat 0 50%;
+		background-size:contain;
+	}
+
+	#main-top .topLogo img{
+		margin:5px 0px;
+	}
+
+	#main-top .loginInfo{
+		margin-right:60px;
+		min-width:180px;
+	}
+
+	#main-top .loginInfo img{
+		float:left;
+		width:40px;
+		margin:10px;
+	}
+
+	#main-top .loginInfo > div{
+		float:left;
+	}
+
+	#main-top .loginInfo .badge{
+		width:44px;
+		padding:2px;
+		margin-top:10px;
+		display:block;
+		font-size:11px;
+		background:#699D08;
+	}
+
+	#main-top .loginInfo strong{
+		margin-top:5px;
+		display:block;
+	}
+
+	#main-top .loginInfo strong a{
+		border-left:1px solid #ADADAD;
+		margin-left:10px;
+		padding-left:10px;
+	}
+
+/*框架中间样式*/
+	#main-mdl{
+		width:1280px;
+		background:#FFFFFF;
+		/*padding:0px 30px;*/
+		padding:0px 14px 20px;
+		min-height:560px;
+	}
+
+	#main-mdl #info{
+		display:none;
+		height:80px;
+		margin-bottom:-1px;
+		background-color:#F5F6F7;
+		border:1px solid #BEBEBE;
+	}
+
+	/*框架导航样式*/
+	#main-mdl #navigation{
+		/*width:18%;*/
+		min-height:560px;
+		margin-left:0px;
+		padding:5px 10px;
+		background-color:#F5F5F5;
+		border:1px solid #BEBEBE;
+		/*background:url(../img/contentBgRgt.png);*/
+	}
+
+	/*框架内容样式*/
+	#main-mdl #content{
+		/*width:82%;*/
+		padding:0px;
+		min-height:560px;
+		margin-left:-1px;
+		border:1px solid #BEBEBE;
+		/*background:url(../img/contentBgRgt.png);*/
+	}
+
+	form .form-group .groupOperat{
+		text-align:center;
+	}
+
+/*框架底部样式*/
+	#main-btm{
+		display:none;
+		height:100px;
+		background:url('../img/bottomBg.png');
+	}
+
+	#main-btm .btmLogo{
+		height:100%;
+		width:300px;
+		margin-left:50px;
+		background:url('../img/bottomLogo.png') no-repeat 0 50%;
+	}
+
+	#main-btm #dialog,#main-btm #formEdit{
+		display:none;
+	}
+
+/*内容框样式*/
+	.dvBox{
+		margin:5px;
+		min-height:200px;
+		border:1px solid #BEBEBE;
+	}
+
+	.dvBox .boxTitle{
+		padding:2px 5px;
+		background-color:#F0F0F0;
+		min-height:30px;
+		border-bottom:1px solid #BEBEBE;
+		background-image:-moz-linear-gradient(top,#F0F0F0,#FCFCFC,#F0F0F0);
+		background-image:-webkit-linear-gradient(top,#F0F0F0,#FCFCFC,#F0F0F0);
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#BEBEBE', GradientType='0'); /* IE*/
+	}
+
+	.dvBox .boxTitle h4{
+		display:inline-block;
+		font-weight:bold;
+		margin:5px 0px;
+	}
+
+	.dvBox .boxTitle a.btn{
+		padding:4px 6px;
+	}
+
+	.dvBox .boxContent{
+		padding:5px;
+		height:100%;
+		width:100%;
+		/*background:rgba(255,255,255,0.7);*/
+	}
+
+	.dvBox .boxContent form{
+		margin:20px;
+	}
+
+	.dvBox .boxContent form .form-group label {
+		margin-7px 0px 0px 0px;
+	}
+
+	.boxContent .boxTitle{
+		padding:0px 5px;
+		min-height:22px;
+	}
+
+	.boxContent .boxTitle h4{
+		margin:0px;
+		font-size:14px;
+	}
+
+	.boxContent .boxTitle a.btn{
+		margin:0px;
+		padding:0px;
+	}
+
+/*导航样式*/
+	#navigation .enterpriseNavigation h4{
+		background:#CCCCCC;
+		margin:-4px -11px -1px;
+		padding:6px 10px;
+		background-image:-moz-linear-gradient(top,#DDDDDD,#FFFFFF,#DDDDDD);
+		background-image:-webkit-linear-gradient(top,#DDDDDD,#FFFFFF,#DDDDDD);
+	}
+
+	#navigation .navigationTitle{
+		cursor:pointer;
+		padding:6px 10px;
+		margin:2px -11px -1px;
+		border:1px solid #BEBEBE;
+		background-image: -moz-linear-gradient(top, #FFFFFF, #BEBEBE);/* Firefox */
+		background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, #BEBEBE)); /* Saf4+, Chrome */
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#BEBEBE', GradientType='0'); /* IE*/
+	}
+
+	#navigation .navigationTitle:hover{
+		background-image: -moz-linear-gradient(top left, #BEBEBE, #FFFFFF);
+		background-image: -webkit-gradient(linear, left bottom, right bottom, color-stop(0, #BEBEBE), color-stop(1, #FFFFFF)); /* Saf4+, Chrome */
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#BEBEBE', endColorstr='#FFFFFF', GradientType='1'); /* IE*/
+	}
+
+	#navigation ul.list-group li{
+		cursor:pointer;
+	}
+
+	#navigation ul.list-group li:hover,#navigation ul.list-group li.curNav{
+		color:#FFFFFF;
+		background-image: -moz-linear-gradient(top left, #BEBEBE, #FFFFFF);
+		background-image: -webkit-gradient(linear, left bottom, right bottom, color-stop(0, #BEBEBE), color-stop(1, #FFFFFF)); /* Saf4+, Chrome */
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#BEBEBE', endColorstr='#FFFFFF', GradientType='1'); /* IE*/
+	}
+
+	#navigation .navigationTitle i.rightAlign{
+		padding-top:4px;
+	}
+
+	#navigation .list-group{
+		display:none;
+		margin-bottom:0px;
+	}
+
+	#navigation .list-group li{
+		padding:6px 10px;
+	}
+
+
+/*地图处理*/
+	.anchorBL,.BMap_cpyCtrl.BMap_noprint.anchorBL{
+		display:none !important;
+	}
+
+	#baiduMap{
+		width:593px !important;
+		height:450px !important;
+		border:#ccc solid 1px !important;
+		display:inline-block !important;
+	}

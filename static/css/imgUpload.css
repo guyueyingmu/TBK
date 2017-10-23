@@ -1,0 +1,51 @@
+.form-group .uploader{
+	width:100px !important;
+	height:100px;
+	padding:0px;
+	margin-right:20px;
+	display: inline-flex;
+	border:1px dashed #639CFB;
+}
+
+.form-group div.uploadContainer{
+	padding:0px;
+}
+
+.form-group .uploader input[type=file]{
+	width:100px;
+	height:100px;
+}
+
+.form-group .uploader i.glyphicon{
+	margin: auto;
+	color:#639CFB;
+	font-size:30px;
+	font-size: 30px;
+    font-weight: normal;
+}
+
+.form-group .uploader span.glyphicon-remove{
+	top:2px;
+	right:2px;
+	z-index:199;
+	cursor:pointer;
+	color:#FF0000;
+	font-size:18px;
+	/*display:none;*/
+	position:absolute;
+	-webkit-box-shadow:0px 0px 5px 5px #ECECEC;
+	-moz-box-shadow:0px 0px 5px 5px #ECECEC;
+	box-shadow:0px 0px 5px 5px #ECECEC;
+}
+
+.qq-upload-button-focus{
+	border:1px dashed #639CFB;
+}
+
+.form-group .uploader.qq-upload-button-hover{
+	background:#FFFFFF;
+	border:1px solid #639CFB;
+	-webkit-box-shadow:0px 0px 5px 5px #ECECEC;
+	-moz-box-shadow:0px 0px 5px 5px #ECECEC;
+	box-shadow:0px 0px 5px 5px #ECECEC;
+}

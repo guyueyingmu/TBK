@@ -1,0 +1,54 @@
+.page{
+	text-align:center;
+}
+
+.page .pgNavigation{
+	padding:2px 5px;
+	border-radius:10px;
+	border:1px solid #E6E6E6;
+}
+
+.page .pgNavigation:hover{
+	border:1px solid #04408C;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+.page .pgInfo{
+	display:inline-block;
+    margin:3px auto;
+}
+
+.page .pgNavigation.pgPre{
+	float:left;
+}
+
+.page .pgNavigation.pgNxt{
+	float:right;
+}
+
+.page .pgNavigation.disabled a{
+	color:#AAAAAA;
+}
+
+.page .pgNavigation.disabled:hover{
+	border:1px solid #E6E6E6;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+.dvNav{
+	margin:5px 10px 10px 0px;
+}
+
+.dvNav .clear{
+	clear:both;
+}
+
+.dvNav .leftAlign{
+	margin-left:10px;
+}
+
+.dvNav .rightAlign{
+	margin-right:10px;
+}

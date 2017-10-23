@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{$title|default='一心'}</title>
+	<meta charset='utf-8'>
+	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+	<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src='http://cdn.bootcss.com/html5shiv/3.7.0/html5shiv.min.js'></script>
+	<script src='http://cdn.bootcss.com/respond.js/1.3.0/respond.min.js'></script>
+	<![endif]-->
+
+	<script type='text/javascript' src='__STATIC__/plugin/jquery.min.js'></script>
+
+	<link rel='stylesheet' media='screen' href='__STATIC__/plugin/bootstrap/bootstrap.min.css'>
+	<script type='text/javascript' src='__STATIC__/plugin/bootstrap/bootstrap.min.js'></script>
+
+	<link rel='stylesheet' type='text/css' href='__STATIC__/plugin/jqueryui/jquery-ui.min.css'>
+	<script type='text/javascript' src='__STATIC__/plugin/jqueryui/jquery-ui.min.js' data-modules='datepicker-zh-CN'></script>
+
+	<link rel='stylesheet' type='text/css' href='__STATIC__/css/pc.css'>
+	<script type='text/javascript' src='__STATIC__/js/pc.js'></script>
+
+	<!-- <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=stTgC4Z77QA4xMTTpm6tHF2d"></script> -->
+
+	<block name='header'>
+		<!-- 头部文件 -->
+	</block>
+</head>
+<body id='baseBody'>
+	<a href='#content' class='sr-only'>Skip to main content</a>
+	<div id='main-top'>
+		<div class='leftAlign topLogo'></div>
+		<!-- 登陆信息 -->
+		<block name='loginInfo'>
+			<div class='rightAlign loginInfo'>
+				<img src='{$Think.session.userInfo.img}'/>
+				<div>
+					<span class='badge'>
+						欢迎您
+					</span>
+					<!-- <p></p> -->
+					<strong>
+						{$Think.session.userInfo.nickName}
+						<a id='logout' data-module='{$Request.module}' data-controller='{$Request.controller}' data-action='logout' href='javascript:void(0);'>退出</a>
+					</strong>
+				</div>
+			</div>
+		</block>
+	</div>
+	<hr class='seporator'/>
+	<div id='main-mdl' class='container'>
+		<!-- 页面内容 -->
+		<block name='body'>
+			<div class='row'>
+				<div id='info' class='col-xs-12'></div>
+				<div id='navigation' class='col-xs-2'>
+					<div class='enterpriseNavigation'>
+						<h4> <i class='glyphicon glyphicon-list'></i>
+							&nbsp; <strong>商家导航</strong>
+						</h4>
+					</div>
+					<!-- 导航 -->
+					<block name='navigation'>
+
+						<div class='navigationTitle'>
+							<i class='glyphicon glyphicon-hand-right'></i>
+							&nbsp; <strong>账号信息</strong>
+							<i class='glyphicon glyphicon-chevron-right rightAlign'></i>
+						</div>
+						<ul class='list-group'>
+							<li class='list-group-item' data-module='manage' data-controller='Index' data-action='wx'>
+								<i class='glyphicon glyphicon-th-large'></i>
+								&nbsp;登录
+							</li>
+
+						</ul>
+
+					</block>
+				</div>
+				<div id='content' class='col-xs-10'>
+					<block name='form'>
+						<!-- 页面信息 -->
+					</block>
+				</div>
+			</div>
+		</block>
+	</div>
+	<div id='main-btm'>
+		<div class='leftAlign btmLogo'>
+			<!-- <img src='PUBLIC/Img/enterpriseBtmLogo.png'>-->
+		</div>
+		<!-- dialog -->
+		<div id='dialog'>
+			<p>
+				<i class='glyphicon'></i>
+				<span>操作失败！！请重新执行！！</span>
+			</p>
+		</div>
+		<!-- tootip -->
+		<div class='tooltip'>
+			<div class='tooltip-inner'></div>
+			<div class='tooltip-arrow'></div>
+		</div>
+		<!-- edit form -->
+		<div id='formEdit'>
+
+		</div>
+		<block name='bottom'>
+			<!-- 底部信息 -->
+		</block>
+	</div>
+
+	<block name='file'>
+		<!-- 引用外部文件 -->
+	</block>
+
+	<input type='hidden' id='domain' value='{$Request.domain}'>
+	<input type='hidden' id='root' value='{$Request.root}'>
+</body>
+</html>

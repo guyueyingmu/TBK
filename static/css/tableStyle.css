@@ -1,0 +1,84 @@
+.dvBox .boxContent table thead th{
+	cursor:pointer;
+	text-align:center;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+.dvBox .boxContent table tbody td{
+	text-align:center;
+}
+
+.dvBox .boxContent table tfoot td{
+	padding-right:0px 10px;
+	text-align:center;
+}
+
+table > tbody > tr > td{
+	vertical-align:middle !important;
+}
+
+.dvBox .boxContent table td.title{
+	font-weight:bolder;
+	cursor:pointer;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+table > tbody > tr > td.left{
+	text-align:left !important;
+	overflow:hidden;
+    text-align:left !important;
+    word-break:keep-all;
+}
+
+/*tfoot .page .pgNavigation{
+	padding:2px 5px;
+	border-radius:10px;
+	border:1px solid #E6E6E6;
+}
+
+tfoot .page .pgNavigation:hover{
+	border:1px solid #04408C;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+tfoot .page .pgInfo{
+	display:inline-block;
+    margin:3px auto;
+}
+
+tfoot .page .pgNavigation.pgPre{
+	float:left;
+}
+
+tfoot .page .pgNavigation.pgNxt{
+	float:right;
+}
+
+tfoot .page .pgNavigation.disabled a{
+	color:#AAAAAA;
+}
+
+tfoot .page .pgNavigation.disabled:hover{
+	border:1px solid #E6E6E6;
+	background-image:-moz-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+	background-image:-webkit-linear-gradient(top,#FFFFFF,#E6E6E6,#FFFFFF);
+}
+
+.dvNav{
+	margin:5px 10px 10px 0px;
+}
+
+.dvNav .clear{
+	clear:both;
+}
+
+.dvNav .leftAlign{
+	margin-left:10px;
+}
+
+.dvNav .rightAlign{
+	margin-right:10px;
+}*/
