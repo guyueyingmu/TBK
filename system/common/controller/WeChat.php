@@ -66,12 +66,12 @@ class WeChat{
 
 		$this->originId=$postData['ToUserName'];
 		$this->addUser($postData['FromUserName']);
+		$this->getConfig();
 
 		$msgType=strtolower($postData['MsgType']);
 		$methodName=$msgType.'Msg';
 		if(method_exists($this,$methodName)){
-			$this->setConfig();
-			return call_user_func([$this,$methodName],[$postData]);
+			return call_user_func_array([$this,$methodName],[$postData]);
 		}
 
 		return '';
@@ -79,8 +79,8 @@ class WeChat{
 
 	//事件类型的消息
 	private function eventMsg($postData){
-		$event=strtolower($postData['Event']);
-		$methodName=$msgType.'Event';
+		$eventType=strtolower($postData['Event']);
+		$methodName=$eventType.'Event';
 		if(method_exists($this,$methodName)){
 			return call_user_func_array([$this,$methodName],[$postData]);
 		}
@@ -95,14 +95,20 @@ class WeChat{
 			'FromUserName'=>$postData['ToUserName'],
 		);
 
-		$responseData['Content']='欢迎关注！';
+		if(isset($postData['EventKey'])&&substr($postData['EventKey'],0,8)=='qrscene_'){
+			$qrScene=substr($postData['EventKey'],8);
+			$mdl=Loader::model('User');
+			$mdl->edit(['where'=>['originId'=>$this->originId,'openId'=>$postData['FromUserName']],'data'=>['qrScene'=>$qrScene]]);
+		}
+
+		$responseData['Content']='欢迎关注 '.$this->getConfig('name').'！';
 		return $this->textResponse($responseData);
 	}
 
 	//取消订阅事件
 	private function unsubscribeEvent($postData){
-		$mdl->Loader::model('User');
-		$mdl->edit(['where'=>['originId'=>$this->originId,'openId'=>$postData['FromUserName']],'data'=>['subscribe'=>0]])
+		$mdl=Loader::model('User');
+		$mdl->edit(['where'=>['originId'=>$this->originId,'openId'=>$postData['FromUserName']],'data'=>['subscribe'=>0]]);
 	}
 
 	//点击事件
@@ -458,7 +464,7 @@ class WeChat{
 		if(!empty($originId)){
 			$mdl=Loader::model('Account');
 			$whereAry=['originId'=>$originId];
-			$fieldAry=['id','userId','originId','appId','appSecrect','aesKey','macId','key'];
+			$fieldAry=['name','userId','originId','appId','appSecrect','aesKey','macId','key'];
 			$cfg=$mdl->getInfo(['where'=>$whereAry,'field'=>$fieldAry]);
 			if(!empty($cfg)){
 				Cache::set('WX_'.$originId,$cfg);
