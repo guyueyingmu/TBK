@@ -64,14 +64,12 @@ class WeChat{
 		$postData=simplexml_load_string($postStr,'SimpleXMLElement',LIBXML_NOCDATA);
 		$postData=json_decode(json_encode($postData),true);
 
-		$openId=$postData['FromUserName'];
-		$this->addUser($openId);
+		$this->originId=$postData['ToUserName'];
+		$this->addUser($postData['FromUserName']);
 
 		$msgType=strtolower($postData['MsgType']);
 		$methodName=$msgType.'Msg';
 		if(method_exists($this,$methodName)){
-			$originId=$postData['ToUserName'];
-			$this->originId=$originId;
 			$this->setConfig();
 			return call_user_func([$this,$methodName],[$postData]);
 		}
@@ -84,7 +82,7 @@ class WeChat{
 		$event=strtolower($postData['Event']);
 		$methodName=$msgType.'Event';
 		if(method_exists($this,$methodName)){
-			return call_user_func([$this,$methodName],[$postData]);
+			return call_user_func_array([$this,$methodName],[$postData]);
 		}
 
 		return '';
@@ -97,13 +95,14 @@ class WeChat{
 			'FromUserName'=>$postData['ToUserName'],
 		);
 
-		$responseData['Content']='欢迎关注';
+		$responseData['Content']='欢迎关注！';
 		return $this->textResponse($responseData);
 	}
 
 	//取消订阅事件
 	private function unsubscribeEvent($postData){
-
+		$mdl->Loader::model('User');
+		$mdl->edit(['where'=>['originId'=>$this->originId,'openId'=>$postData['FromUserName']],'data'=>['subscribe'=>0]])
 	}
 
 	//点击事件
@@ -383,20 +382,19 @@ class WeChat{
 
 	private function addUser($openId,$originId=null){
 		$originId=empty($originId)?$this->originId:$originId;
-		$userInfo=$this->getUserInfo();
+
 		$mdl=Loader::model('User');
 		$user=$mdl->getInfo(['where'=>['openId'=>$openId,'originId'=>$this->originId]]);
 
-		$data=['originId'=>$originId,'openId'=>$openId,'unionId'=>$userInfo['unionid'],'nickName'=>$userInfo['nickname'],'sex'=>$userInfo['sex'],'img'=>$userInfo['headimgurl'],'subscribe'=>$userInfo['subscribe'],'subscribeTime'=>date('Y-m-d H:i:s',$userInfo['subscribe_time']),'city'=>$userInfo['city'],'province'=>$userInfo['province'],'country'=>$userInfo['country'],'remark'=>$userInfo['remark']];
 		if(empty($user)){
-			$rst=$mdl->add($data);
-		}
-		else{
-			$rst=$mdl->edit(['where'=>['id'=>$user['id']],'data'=>$data]);
-		}
-
-		if($rst===false){
-			Log::write('更新用户信息失败：'.$mdl->getLastSql());
+			$userInfo=$this->getUserInfo($openId);
+			if($userInfo['subscribe']==1){
+				$data=['originId'=>$originId,'openId'=>$openId,'unionId'=>isset($userInfo['unionid'])?$userInfo['unionid']:'','groupId'=>$userInfo['groupid'],'nickName'=>$userInfo['nickname'],'sex'=>$userInfo['sex'],'img'=>$userInfo['headimgurl'],'subscribe'=>$userInfo['subscribe'],'subscribeTime'=>date('Y-m-d H:i:s',$userInfo['subscribe_time']),'city'=>$userInfo['city'],'province'=>$userInfo['province'],'country'=>$userInfo['country'],'remark'=>$userInfo['remark']];
+				$rst=$mdl->add($data);
+				if($rst===false){
+					Log::write('更新用户信息失败：'.$mdl->getLastSql());
+				}
+			}
 		}
 	}
 
