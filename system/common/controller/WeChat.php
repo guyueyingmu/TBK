@@ -2,7 +2,7 @@
 
 namespace app\common\controller;
 
-use think\Load;
+use think\Loader;
 use think\Request;
 use think\Cache;
 use think\Log;
@@ -63,8 +63,11 @@ class WeChat{
 
 		$postData=simplexml_load_string($postStr,'SimpleXMLElement',LIBXML_NOCDATA);
 		$postData=json_decode(json_encode($postData),true);
-		$msgType=strtolower($postData['MsgType']);
 
+		$openId=$postData['FromUserName'];
+		$this->addUser($openId);
+
+		$msgType=strtolower($postData['MsgType']);
 		$methodName=$msgType.'Msg';
 		if(method_exists($this,$methodName)){
 			$originId=$postData['ToUserName'];
@@ -89,10 +92,13 @@ class WeChat{
 
 	//订阅事件
 	private function subscribeEvent($postData){
-		$opneId=$postData['FromUserName'];
-		$userInfo=$this->getUserInfo($openId);
+		$responseData=array(
+			'ToUserName'=>$postData['FromUserName'],
+			'FromUserName'=>$postData['ToUserName'],
+		);
 
-		Log::write('UserInfo:'.var_export($userInfo,true));
+		$responseData['Content']='欢迎关注';
+		return $this->textResponse($responseData);
 	}
 
 	//取消订阅事件
@@ -126,11 +132,6 @@ class WeChat{
 			'ToUserName'=>$postData['FromUserName'],
 			'FromUserName'=>$postData['ToUserName'],
 		);
-
-		$opneId=$postData['FromUserName'];
-		$userInfo=$this->getUserInfo($openId);
-
-		Log::write('UserInfo:'.var_export($userInfo,true));
 
 		$responseData['Content']=$this->dealTxtMsg($postData['Content']);
 		return $this->textResponse($responseData);
@@ -349,7 +350,7 @@ class WeChat{
 		if(!empty($originId)){
 			$accessToken=Cache::get('AT_'.$originId);
 			if(empty($accessToken)){
-				$url='https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='.$this->appId.'&secret='.$this->appSecrect;
+				$url='https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='.$this->getConfig('appId').'&secret='.$this->getConfig('appSecrect');
 				$result=$this->curlRequest($url);
 				$data=json_decode($result['data'],true);
 
@@ -367,7 +368,7 @@ class WeChat{
 		throw new \Exception($msg);
 	}
 
-	public function getUserInfo($openId){
+	private function getUserInfo($openId){
 		if(!empty($openId)){
 			$url='https://api.weixin.qq.com/cgi-bin/user/info?access_token='.$this->getAccessToken().'&openid='.$openId.'&lang=zh_CN';
 			$result=$this->curlRequest($url);
@@ -380,7 +381,26 @@ class WeChat{
 		return false;
 	}
 
-	public function sentTmpMsg($openIdAry,$tplId,$param,$url='',$topColor='#FF0000'){
+	private function addUser($openId,$originId=null){
+		$originId=empty($originId)?$this->originId:$originId;
+		$userInfo=$this->getUserInfo();
+		$mdl=Loader::model('User');
+		$user=$mdl->getInfo(['where'=>['openId'=>$openId,'originId'=>$this->originId]]);
+
+		$data=['originId'=>$originId,'openId'=>$openId,'unionId'=>$userInfo['unionid'],'nickName'=>$userInfo['nickname'],'sex'=>$userInfo['sex'],'img'=>$userInfo['headimgurl'],'subscribe'=>$userInfo['subscribe'],'subscribeTime'=>date('Y-m-d H:i:s',$userInfo['subscribe_time']),'city'=>$userInfo['city'],'province'=>$userInfo['province'],'country'=>$userInfo['country'],'remark'=>$userInfo['remark']];
+		if(empty($user)){
+			$rst=$mdl->add($data);
+		}
+		else{
+			$rst=$mdl->edit(['where'=>['id'=>$user['id']],'data'=>$data]);
+		}
+
+		if($rst===false){
+			Log::write('更新用户信息失败：'.$mdl->getLastSql());
+		}
+	}
+
+	private function sentTmpMsg($openIdAry,$tplId,$param,$url='',$topColor='#FF0000'){
 		$rtn=[];
 		$url='https://api.weixin.qq.com/cgi-bin/message/template/send?access_token='.$this->getAccessToken();
 		foreach($openIdAry as $openId){
