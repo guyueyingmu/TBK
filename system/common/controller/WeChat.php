@@ -447,6 +447,8 @@ class WeChat{
 		$couponItems=$obj->getCouponItems($kw);
 		$couponItemCnt=$couponItems['count'];
 
+		$cfg=$this->getConfig();
+
 		$itemId=TBK::getItemId($url);
 		if(!empty($itemId)){
 			$itemInfo=$obj->getItemInfo($kw,$itemId);
