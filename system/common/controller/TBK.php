@@ -190,9 +190,9 @@ class TBK{
 		$rqstHeader=['referer'=>'https://pub.alimama.com/promo/search/index.htm','x-requested-with'=>'XMLHttpRequest','pragma'=>'no-cache','cache-control'=>'no-cache'];
 		$result=self::curlRequest($url,null,$rqstCookie,$rqstHeader);
 
-		$data=json_decode($result,true);
+		//$data=json_decode($result,true);
 
-		return $data['data'];
+		return $result['data'];
 	}
 
 	private function getConfig($name=null){
