@@ -625,7 +625,7 @@ class WeChat{
 	}
 
 	private function setConfig(){
-		$originId=$htis->originId;
+		$originId=$this->originId;
 		if(!empty($originId)){
 			$mdl=Loader::model('Account');
 			$whereAry=['originId'=>$originId,'isValid'=>1];
