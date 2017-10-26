@@ -1,7 +1,6 @@
 <?php
 namespace app\common\controller;
 
-use app\common\util\WX;
 use think\Controller;
 use think\Config;
 use think\Loader;
@@ -18,9 +17,7 @@ class Base extends Controller{
 		'client'=>[
 			'index'=>['index','tst'],
 		],
-		'manage'=>[
-			'index'=>['index','wx','waitLogin','tstx','wxLogin'],
-		],
+		'manage'=>[],
 	];
 
 	protected function _initialize(){
@@ -49,9 +46,6 @@ class Base extends Controller{
 				if(!$this->permissionVerify()){
 					return $this->error('您没有访问权限');
 				}
-			}
-			else if(MODULE=='manage'){
-
 			}
 			else if(!(in_array(ACTION,$this->noLogin['base'])||(isset($this->noLogin[MODULE])&&isset($this->noLogin[MODULE][strtolower(CONTROLLER)])&&in_array(ACTION,$this->noLogin[MODULE][strtolower(CONTROLLER)])))){
 				if(in_array(MODULE,['client','operate'])){
@@ -157,138 +151,6 @@ class Base extends Controller{
 		}
 	}
 
-	protected function getExpressData($expressId=null){
-		$data=Cache::get('expressData');
-		if(empty($data)){
-			$orderAry=['sort'=>'asc'];
-			$expressMdl=Loader::model('Express');
-			$expressData=$expressMdl->getAll(['where'=>['status'=>1],'order'=>$orderAry]);
-			foreach($expressData as &$express){
-				$data[]=['text'=>$express['name'],'value'=>$express['id'],'code'=>$express['code']];
-			}
-
-			Cache::set('expressData',$data,0);
-		}
-
-		if(!empty($expressId)){
-			foreach($data as $info){
-				if($expressId==$info['value']){
-					return $info;
-				}
-			}
-		}
-
-		return $data;
-	}
-
-	protected function getExpenseData($expressId=null,$provinceId=null){
-		$data=Cache::get('expenseData');
-		if(empty($data)){
-			$expenseMdl=Loader::model('Expense');
-			$expressMdl=Loader::model('Express');
-
-			$expressData=$expressMdl->getField(['where'=>['status'=>1],'field'=>['id']]);
-			foreach($expressData as $expressId){
-				$expenseData=$expenseMdl->getField(['where'=>['expressId'=>$expressId],'field'=>['standard','additional'],'key'=>'provinceId']);
-				$data[$expressId]=$expenseData;
-			}
-
-			Cache::set('expenseData',$data,0);
-		}
-
-		return (empty($expressId)||empty($provinceId))?$data:$data[$expressId][$provinceId];
-	}
-
-	protected function getOriginData(){
-		$data=Cache::get('originData');
-		if(empty($data)){
-			$townMdl=Loader::model('Town');
-			$vilageMdl=Loader::model('Vilage');
-
-			$orderAry=['convert(name using gbk)'=>'asc'];
-
-			$townData=$townMdl->getAll(['where'=>['origin'=>1],'order'=>$orderAry]);
-			foreach($townData as &$town){
-				$vilageData=$vilageMdl->getAll(['where'=>['townId'=>$town['id'],'origin'=>1],'order'=>$orderAry]);
-				$vilageTmp=[];
-				foreach($vilageData as &$vilage){
-					$vilageTmp[]=['text'=>$vilage['name'],'value'=>$vilage['id']];
-				}
-				$data[]=['text'=>$town['name'],'value'=>$town['id'],'children'=>$vilageTmp];
-			}
-
-			Cache::set('originData',$data,0);
-		}
-
-		return $data;
-	}
-
-	protected function getDestinationData(){
-		$data=Cache::get('destinationData');
-		if(empty($data)){
-			$provinceMdl=Loader::model('Province');
-			$cityMdl=Loader::model('City');
-			$countryMdl=Loader::model('Country');
-
-			$orderAry=['convert(name using gbk)'=>'asc'];
-
-			$provinceData=$provinceMdl->getAll(['where'=>['destination'=>1],'order'=>$orderAry]);
-			foreach($provinceData as &$province){
-				$cityData=$cityMdl->getAll(['where'=>['provinceId'=>$province['id'],'destination'=>1],'order'=>$orderAry]);
-				$cityTmp=[];
-				foreach($cityData as &$city){
-					$countryData=$countryMdl->getAll(['where'=>['cityId'=>$city['id'],'destination'=>1],'order'=>$orderAry]);
-					$countryTmp=[];
-					foreach($countryData as $country){
-						$countryTmp[]=['text'=>$country['name'],'value'=>$country['id'],'fullName'=>$country['fullName']];
-					}
-					$cityTmp[]=['text'=>$city['name'],'value'=>$city['id'],'children'=>$countryTmp];
-				}
-				$data[]=['text'=>$province['name'],'value'=>$province['id'],'children'=>$cityTmp];
-			}
-
-			Cache::set('destinationData',$data,0);
-		}
-
-		return $data;
-	}
-
-	protected function getVilageToProvince($vilageId=null){
-		$data=Cache::get('vilageToProvince');
-		if(empty($data)){
-			$vilageMdl=Loader::model('Vilage');
-			$fieldAry=['v.id'=>'vilageId','v.name'=>'vilageName','t.id'=>'townId','t.name'=>'townName','c.id'=>'countryId','c.name'=>'countryName','ct.id'=>'cityId','ct.name'=>'cityName','p.id'=>'provinceId','p.name'=>'provinceName'];
-			$joinAry=[['__TOWN__ t','v.townId=t.id'],['__COUNTRY__ c','t.countryId=c.id'],['__CITY__ ct','c.cityId=ct.id'],['__PROVINCE__ p','ct.provinceId=p.id']];
-			$objData=$vilageMdl->alias('v')->field($fieldAry)->join($joinAry)->select();
-			foreach($objData as $obj){
-				$tmp=$obj->getData();
-				$tmp['name']=$tmp['provinceName'].'-'.$tmp['cityName'].'-'.$tmp['countryName'].'-'.$tmp['townName'].'-'.$tmp['vilageName'];
-				$data[$tmp['vilageId']]=$tmp;
-			}
-			Cache::set('vilageToProvince',$data,0);
-		}
-
-		return empty($vilageId)?$data:$data[$vilageId];
-	}
-
-	protected function getCountryToProvince($countryId=null){
-		$data=Cache::get('countryToProvince');
-		if(empty($data)){
-			$countryMdl=Loader::model('Country');
-			$fieldAry=['c.id'=>'countryId','c.name'=>'countryName','ct.id'=>'cityId','ct.name'=>'cityName','p.id'=>'provinceId','p.name'=>'provinceName'];
-			$joinAry=[['__CITY__ ct','c.cityId=ct.id'],['__PROVINCE__ p','ct.provinceId=p.id']];
-			$objData=$countryMdl->alias('c')->field($fieldAry)->join($joinAry)->select();
-			foreach($objData as $obj){
-				$tmp=$obj->getData();
-				$tmp['name']=$tmp['provinceName'].'-'.$tmp['cityName'].'-'.$tmp['countryName'];
-				$data[$tmp['countryId']]=$tmp;
-			}
-			Cache::set('countryToProvince',$data,0);
-		}
-
-		return empty($countryId)?$data:$data[$countryId];
-	}
-
 	protected function weChatTrade($param,$tradeType='JSAPI'){
 		$tradeObj=new WeChatTrade($tradeType);
 		$weChatCfg=$tradeObj->getWeChatConfig();
@@ -314,11 +176,6 @@ class Base extends Controller{
 		return false;
 	}
 
-	protected function getAccessToken(){
-		$weChatObj=new WeChat();
-		return $weChatObj->getAccessToken();
-	}
-
 	protected function getJsTicket(){
 		$tradeObj=new WeChatTrade();
 		return $tradeObj->getJsTicket();
@@ -342,7 +199,7 @@ class Base extends Controller{
 		$result=curl_exec($curl);
 		$info=curl_getinfo($curl);
 		curl_close($curl);
-		return array('data'=>$result,'info'=>$info);
+		return ['data'=>$result,'info'=>$info];
 	}
 
 	public function login(){
@@ -359,7 +216,6 @@ class Base extends Controller{
 
 	public function logout(){
 		Session::clear();
-		return ['status'=>true];
 	}
 
 	public function loginSubmit(){
@@ -480,57 +336,48 @@ class Base extends Controller{
 	}
 
 	public function tstx(){
-		//$this->error();
+		$obj=new TBK('128077217','gh_efba84cec87e');
 
+		$str='10000 ';
+		$rgx='/^\d{5}$/';
+		if(preg_match($rgx,$str,$data)){
+			dump($data);
+		}
+		else{
+			dump('not match');
+		}
+		return;
+
+		$id=557690220188;
+		$kw='2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤';
+		$id=550421236994;
+		$kw='纯棉运动女式九分裤';
+		// $result=$obj->searchItems($kw);
+		// dump($result);return;
+
+		// $itemInfo=$obj->getItemInfo($kw,$id);
+		// dump($itemInfo);return;
+
+		$result=$obj->getLink($id);
+		dump($result);
+		return;
+
+		$str='【【天猫超市】3M 9001V防雾霾粉尘带呼吸阀3只装PM2.5折叠式口罩】http://a.fwg6.com/h.Gz96Us?sm=31ae80 点击链接，再选择浏览器打开；或复制这条信息￥nZor05T7VN7￥后打开👉手机淘宝👈';
+		$str='【我剁手都要买的宝贝（2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤），快来和我一起瓜分红I包】http://w.yre0.com/h.FeMt6k 点击链接，再选择浏览器打开；或复制这条信息￥09Uv0gNrUaB￥后打开手淘';
+		$rgx='/【(.*)】.*(http:\/\/\S+)/';
+		if(preg_match($rgx,$str,$matchResult)){dump($matchResult);
+			$kw=$matchResult[1];
+			$url=$matchResult[2];
+			$id=TBK::getItemId($url);
+			if(!empty($id)){
+				$itemInfo=$obj->getItemInfo($kw,$id);
+				dump($itemInfo);
+			}
+		}
 
 		return;
 
-
-		$wxCfg=Session::get('wx');
-		$obj=new WX($wxCfg);
-
-
-		$result=$obj->syncCheck();
-		dump($result);
-
-		if($result['status']&&$result['retcode']==0){
-			if(!isset($wxCfg['privateContact'])){
-				$result=$obj->getContact();
-				if($result['status']){
-					dump('getContact success');
-					$wxCfg=$obj->getConfig();
-					Session::set('wx',$wxCfg);
-				}
-				else{
-					dump('getContact faild');
-				}
-			}
-
-			$pf=pcntl_fork();
-			if($pf){
-				$obj->listenMsg();
-				return;
-			}
-			return;
-		}
-
-		if($result['status']&&$result['selector']==2){
-			$syncResult=$obj->sync();
-			dump($syncResult);
-			if($syncResult['status']){
-				$wxCfg=$obj->getConfig();
-				Session::set('wx',$wxCfg);
-				//$obj->dealMsg($syncResult['data']);
-			}
-			else{
-				$result=$obj->syncCheck();
-				dump($result);
-			}
-		}
-
-
-
-		// $result=$obj->responseMsg('@cc38115630822e5aea89b24fe9f11204','这是什么？？');
-		// dump($result);
+		$id=TBK::getItemId('http://a.fwg6.com/h.Gz96Us?sm=31ae80');
+		dump($id);
 	}
 }

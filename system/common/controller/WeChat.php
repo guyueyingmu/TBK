@@ -8,16 +8,9 @@ use think\Cache;
 use think\Log;
 
 class WeChat{
-
 	const TOKEN='0b9d945d58ea386efb521353ba8d52d0';
-	private $config=null;
-	private $originId=null;
 
-	function __construct($config=null){
-		if(!empty($config)){
-			$this->config=$config;
-		}
-	}
+	private $originId=null;
 
 	public function index(){
 		$request=Request::instance();
@@ -105,7 +98,7 @@ class WeChat{
 		$mdl=Loader::model('User');
 		$mdl->edit(['where'=>$whereAry,'data'=>$saveData]);
 
-		$responseData['Content']='欢迎关注【'.$this->getConfig('name').'】';
+		$responseData['Content']="你好！\n欢迎使用【".$this->getConfig('name')."】！\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n🔥好友推荐的朋友请向你的好友索要她的邀请码.\n非好友邀请的亲,回复【10000】 领取关注红包. \n👉 有问题回复【帮助】\n👉 查看使用教程\n http://t.cn/RK37GMb\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
 		return $this->textResponse($responseData);
 	}
 
@@ -313,8 +306,169 @@ class WeChat{
 	}
 
 	//处理文本消息内容
-	private function dealTxtMsg($content){
-		return $content.' -^_^-';
+	private function dealTxtMsg($content,$openId){
+		$content=trim($content);
+		$cfg=$this->getConfig();
+
+		if($content=='帮助'){
+			$msg="【微信购物步骤】\n1、打开手机淘宝客户端，选中购买的产品。\n2、点击产品标题旁的“分享”按钮，复制链接。\n3、把链接发给我，我会自动给你返回优惠券信息。\n4、复制我提供的优惠券信息，打开手机淘宝客户端付款购买。\n5、购物完成后，记得把订单号发给我绑定返利。\n6、如果没有邀请码,请回复10000\n7、发送指令【搜索+商品名】可以领取优惠券.\n8、发送指令【提现】金额超过1元,即可获得相应金额的红包.\n9、发送指令【个人信息】查看帐户余额和专属邀请码.\n操作流程请点击查看\n".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n🔥🔥🔥下单后务必将订单号发给我！\n━┉┉┉┉∞┉┉┉┉━";
+			return $msg;
+		}
+
+		if($content=='提现'){
+			$msg=$this->msgForWithdraw($openId);
+			return $msg;
+		}
+
+		//邀请码
+		$rgx='/^\d{5}$/';
+		if(preg_match($rgx,$content,$matchResult)){
+			$msg=$this->msgForInvitation($content,$openId);
+			return $msg;
+		}
+
+		//个人信息
+		if($content=='个人信息'){
+			$msg=$this->msgForUserInfo($opneId);
+			return $msg;
+		}
+
+
+		$obj=new TBK($cfg['tbkId'],$cfg['originId']);
+
+		$defaultMsg="⭕ 抱歉,淘宝太忙了，请稍后重试！\n━┉┉┉┉∞┉┉┉┉━\n👉 查看使用教程\n".$cfg['tutorialLink'];
+
+		$loginStatus=$obj->isLogin();
+		if($loginStatus['status']){
+			//淘宝分享
+			$rgx='/【(.*)】.*(http:\/\/\S+)/';
+			if(preg_match($rgx,$content,$matchResult)){
+				$kw=$matchResult[1];
+				$url=$matchResult[2];
+
+				$msg=$this->msgForShare($kw,$url);
+			}
+
+			//搜索+kw
+			if(mb_substr($content,0,2)=='搜索'){
+				$kw=mb_substr($content,2);
+				$msg=$this->msgForSear($kw);
+				return $msg;
+			}
+
+
+			//订单号
+			$rgx='/^\d{17}$/';
+			if(preg_match($rgx,$content,$matchResult)){
+				$msg=$this->msgForOrder($content,$openId);
+				return $msg;
+			}
+		}
+
+		return $defaultMsg;
+	}
+
+	//处理搜索
+	private function msgForSearch($obj,$kw){
+		$couponItems=$obj->getCouponItems($kw);
+		$cnt=$couponItems['count'];
+
+		$msg="机器人已整理好所有【".$kw."】共计【".$cnt."】个优惠券，点击下面链接进行领券购买：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
+		return $msg;
+	}
+
+	//处理提现
+	private function msgForWithdraw($openId){
+		return '敬请期待！';
+	}
+
+	//处理订单号
+	private function msgForOrder($orderId,$opneId){
+		return '敬请期待！';
+	}
+
+	//处理个人信息消息
+	private function msgForUserInfo($opneId){
+		return '敬请期待！';
+	}
+
+	//处理邀请码消息
+	private function msgForInvitation($code,$openId){
+		$mdl=Loader::model('User');
+		$invitedInfo=$mdl->getInfo(['where'=>['openId'=>$openId]]);
+		if($invitedInfo['fromUserId']==0){
+			$fromUserId=intval($code)-10000;
+			$fromUserId=$fromUserId==0?$cfg['userId']:$fromUserId;
+			$fromUserInfo=$mdl->getInfo(['where'=>['id'=>$fromUserId]]);
+			if(!empty($fromUserInfo)){
+				$mony=$this->getInviteMoney();
+				$invitedMoney=$this->getInviteMoney();
+
+				$mdl->startTrans();
+				$result=$mdl->edit(['where'=>['id'=>$invitedInfo['id']],'data'=>['fromUserId'=>$fromUserId,'money'=>['exp','money'+$invitedMoney]]]);
+				if($result==false){
+					$mdl->rollback();
+					Log::write('关注赠送失败：'.$mdl->getLastSql());
+					return '请重新发送您的邀请码！';
+				}
+
+				$result=$mdl->edit(['where'=>['id'=>$fromUserId],'data'=>['money'=>['exp','money'+$money]]]);
+				if($result===false){
+					$mdl->rollback();
+					Log::write('邀请赠送失败：'.$mdl->getLastSql());
+					return '请重新发送您的邀请码！';
+				}
+
+				$ivtMdl=Loader::model('Invitation');
+				$result=$ivtMdl->add(['userId'=>$fromUserId,'money'=>$money,'invitedUserId'=>$invitedInfo['id'],'invitedMoney'=>$invitedMoney]);
+				if($result===false){
+					$mdl->rollback();
+					Log::write('邀请纪录失败：'.$ivtMdl->getLastSql());
+					return '请重新发送您的邀请码！';
+				}
+
+				$mdl->commit();
+				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n http://t.cn/RNZid59\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
+			}
+		}
+
+		return '';
+	}
+
+	//获取邀请 关注时赠送金额
+	private function getInviteMoney($min=1,$max=50){
+		return mt_rand($min,$max)/100;
+	}
+
+	//处理淘宝分享的消息
+	private function msgForShare($obj,$kw,$url){
+		$couponItems=$obj->getCouponItems($kw);
+		$couponItemCnt=$couponItems['count'];
+
+		$itemId=TBK::getItemId($url);
+		if(!empty($itemId)){
+			$itemInfo=$obj->getItemInfo($kw,$itemId);
+			if(empty($itemInfo)&&!empty($couponItems['data'])){
+				$itemInfo=$couponItems['data'][0];
+				$msg="**************\n您所查询的商品没有优惠，机器人为您查询到了同标题商品，【商品价格】可能会不一致，请谨慎购买！\n**************\n\n【".$kw."】";
+			}
+
+			if(empty($itemInfo)){
+				$msg="**************\n您所查询的商品没有优惠\n**************";
+			}
+			else{
+				$price=$itemInfo['zkPrice'];
+				$coupon=$itemInfo['couponAmount'];
+				$rebate=$itemInfo['tkCommFee'];
+
+				$linkInfo=$obj->getLink($itemId,$cfg['sitId'],$cfg['adZoneId']);
+				if(!empty($linkInfo)){
+					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink']."\n\n";
+				}
+			}
+		}
+
+		return $msg;
 	}
 
 	//回复文本信息
@@ -335,6 +489,11 @@ class WeChat{
 		$xml='<xml>'.$this->dataToXml($data).'</xml>';
 
 		return $xml;
+	}
+
+	//发送客服消息
+	private function kfMsg($openId,$msg){
+
 	}
 
 	public function oAuth($redirectUri,$state='',$scope='snsapi_base'){
@@ -390,15 +549,15 @@ class WeChat{
 		return false;
 	}
 
-	private function addUser($openId,$originId=null){
-		$originId=empty($originId)?$this->originId:$originId;
+	private function addUser($openId){
+		$originId=$this->originId;
 
 		$mdl=Loader::model('User');
 		$user=$mdl->getInfo(['where'=>['originId'=>$originId,'openId'=>$openId]]);
 
 		if(empty($user)){
 			$userInfo=$this->getUserInfo($openId);
-			if($userInfo['subscribe']==1){
+			if(!empty($userInfo)&&$userInfo['subscribe']==1){
 				$data=['originId'=>$originId,'openId'=>$openId,'unionId'=>isset($userInfo['unionid'])?$userInfo['unionid']:'','groupId'=>$userInfo['groupid'],'nickName'=>$userInfo['nickname'],'sex'=>$userInfo['sex'],'img'=>$userInfo['headimgurl'],'subscribe'=>$userInfo['subscribe'],'subscribeTime'=>date('Y-m-d H:i:s',$userInfo['subscribe_time']),'city'=>$userInfo['city'],'province'=>$userInfo['province'],'country'=>$userInfo['country'],'remark'=>$userInfo['remark']];
 				$rst=$mdl->add($data);
 				if($rst===false){
@@ -450,11 +609,11 @@ class WeChat{
 		return false;
 	}
 
-	private function getConfig($name=null,$originId=null){
-		$originId=empty($originId)?$this->originId:$originId;
+	private function getConfig($name=null){
+		$originId=$this->originId;
 		if(!empty($originId)){
 			$cfg=Cache::get('WX_'.$originId);
-			$rst=empty($cfg)?$this->setConfig($originId):true;
+			$rst=empty($cfg)?$this->setConfig():true;
 			if($rst){
 				return empty($name)?$cfg:(isset($cfg[$name])?$cfg[$name]:null);
 			}
@@ -463,12 +622,12 @@ class WeChat{
 		return null;
 	}
 
-	private function setConfig($originId=null){
-		$originId=empty($originId)?$this->originId:$originId;
+	private function setConfig(){
+		$originId=$htis->originId;
 		if(!empty($originId)){
 			$mdl=Loader::model('Account');
-			$whereAry=['originId'=>$originId];
-			$fieldAry=['name','userId','originId','appId','appSecrect','aesKey','macId','key'];
+			$whereAry=['originId'=>$originId,'isValid'=>1];
+			$fieldAry=['wxName','wxId','userId','originId','appId','appSecrect','aesKey','macId','key','tbkName','tbkId','tbkPassword','siteId','adZoneId'];
 			$cfg=$mdl->getInfo(['where'=>$whereAry,'field'=>$fieldAry]);
 			if(!empty($cfg)){
 				Cache::set('WX_'.$originId,$cfg);
@@ -480,7 +639,7 @@ class WeChat{
 			$msg='设置公众号信息失败！OriginID不能为NULL';
 		}
 
-		throw new \Exception($msg);
+		//throw new \Exception($msg);
 		return false;
 	}
 

@@ -151,11 +151,14 @@
 		}
 
 		//淘宝联盟搜索商品
-		public static function search($kw,$pgIdx=1,$pgSize=100){
+		public static function search($kw,$token='',$pvId='',$pgIdx=1,$pgSize=100){
 			// $sortType=['销量'=>9,'月推广量'=>5,'收入比例'=>1,'月支出佣金'=>7];
 			// $shopTag=['营销和定向计划'=>'yxjh','店铺优惠券'=>'dpyhq'];
+			$time=time();
 
-			$rqstData=['q'=>$kw,'toPage'=>$pgIdx,'perPageSize'=>$pgSize];
+			$rqstData=['q'=>$kw,'toPage'=>$pgIdx,'perPageSize'=>$pgSize,'_t'=>$time,'t'=>$time];
+			empty($token)?'':$rqstData['_tb_token_']=$token;
+			empty($pvId)?'':$rqstData['pvid']=$pvId;
 			$url='https://pub.alimama.com/items/search.json?'.http_build_query($rqstData,'','&',PHP_QUERY_RFC3986);
 
 			$result=TB::curlRequest($url);
@@ -164,26 +167,26 @@
 			if($result['ok']){
 				$data=$result['data']['pageList'];
 				if(!empty($data)){
+					$pvId=$result['info']['pvid'];
 					$count=$result['data']['head']['docsfound'];
-					return ['data'=>$data,'count'=>$count];
+					return ['data'=>$data,'count'=>$count,'pvId'=>$pvId];
 				}
 			}
 			return null;
 		}
 
 		//通过分享信息获取商品详情
-		public static function getDataForShare($kw,$itemId){
-			//$id=TB::getId($url);
-
+		public static function getDataForShare($kw,$itemId,$token='',$pvId=''){
 			$pgIdx=0;
 			$count=0;
 			$itemInfo=null;
 			while(true&&empty($itemInfo)){
-				$result=self::search($kw,++$pgIdx);
+				$result=self::search($kw,$token,$pvId,++$pgIdx);
 				if(empty($result)){
 					break;
 				}
 				else{
+					$pvId=$result['pvId'];
 					$count=$result['count'];
 					$data=$result['data'];
 					foreach($data as $info){
@@ -195,18 +198,14 @@
 				}
 			}
 
-			return $itemInfo;
-			$data=null;
-			if(!empty($itemInfo)){
-
-			}
-			return $data;
+			return ['pvId'=>$pvId,'itemInfo'=>$itemInfo];
 		}
 
 		//获取推广链接
-		public static function getLink($itemId=548924594463,$adzoneId=141692487,$siteId=38374213){
-			$rqstData=['auctionid'=>$itemId,'adzoneid'=>$adzoneId,'siteid'=>$siteId];
-			$url='http://pub.alimama.com/common/code/getAuctionCode.json?'.http_build_query($rqstData,'','&',PHP_QUERY_RFC3986);
+		public static function getLink($pvId='10_117.101.178.77_29709_1508905898856',$itemId=553341205322,$adzoneId=141816670,$siteId=38418162){
+			$time=time();
+			$rqstData=['auctionid'=>$itemId,'adzoneid'=>$adzoneId,'siteid'=>$siteId,'pvid'=>$pvId,'t'=>$time];
+			$url='http://pub.alimama.com/common/code/getAuctionCode.json?'.http_build_query($rqstData);
 			dump($url);
 			$result=TB::curlRequest($url);
 			dump($result);

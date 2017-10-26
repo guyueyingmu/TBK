@@ -34,14 +34,14 @@
 	});
 
 	function waitLogin(){
-		var url='/index.php/'+module+'/'+controller+'/waitForLogin';
+		var url='/index.php/'+module+'/'+controller+'/wxLogin';
 		$.post(url,{_:(new Date()).valueOf()},function(rst){
 			var code=parseInt(rst.code);
 
 			if(code==200){
 				console.log('正在登陆......');
 				console.log(rst);
-				var url='/index.php/'+module+'/'+controller+'/loginRedirect';
+				var url='/index.php/'+module+'/'+controller+'/wxRedirect';
 				$.post(url,null,function(rst){
 					console.log(rst);
 					if(rst.status){

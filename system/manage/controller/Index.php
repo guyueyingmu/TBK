@@ -2,6 +2,7 @@
 namespace app\manage\controller;
 
 use app\common\controller\Base;
+use app\common\controller\TBK;
 use app\common\util\WX;
 use think\Session;
 use think\Loader;
@@ -31,7 +32,7 @@ class Index extends Base{
 		}
 	}
 
-	public function waitForLogin(){
+	public function wxLogin(){
 		//$uuid=$this->request->param('uuid');
 		$wxCfg=Session::get('wx');
 		$obj=new WX($wxCfg);
@@ -43,7 +44,7 @@ class Index extends Base{
 		return $result;
 	}
 
-	public function loginRedirect(){
+	public function wxRedirect(){
 		$wxCfg=Session::get('wx');
 		$obj=new WX($wxCfg);
 
@@ -54,25 +55,50 @@ class Index extends Base{
 		return $result;
 	}
 
-	public function tstx(){
+	private function wxListen(){
+		//$this->error();
+		return;
+
 		$wxCfg=Session::get('wx');
 		$obj=new WX($wxCfg);
 
-		$result=$obj->getQrCode();
-		dump($resutl);
+		$result=$obj->syncCheck();
+		dump($result);
 
-		// $result=$obj->loginRedirect();
-		// dump($result);
-		// //if($result['status']){
-		// 	$wxCfg=$obj->getConfig();
-		// 	Session::set('wx',$wxCfg);
-		// //}
+		if($result['status']&&$result['retcode']==0){
+			if(!isset($wxCfg['privateContact'])){
+				$result=$obj->getContact();
+				if($result['status']){
+					dump('getContact success');
+					$wxCfg=$obj->getConfig();
+					Session::set('wx',$wxCfg);
+				}
+				else{
+					dump('getContact faild');
+				}
+			}
 
-		// $result=$obj->getContact();
-		// dump($result);
+			$pf=pcntl_fork();
+			if($pf){
+				$obj->listenMsg();
+				return;
+			}
+			return;
+		}
 
-		// $result=$obj->sync();
-		// dump($result);
+		if($result['status']&&$result['selector']==2){
+			$syncResult=$obj->sync();
+			dump($syncResult);
+			if($syncResult['status']){
+				$wxCfg=$obj->getConfig();
+				Session::set('wx',$wxCfg);
+				//$obj->dealMsg($syncResult['data']);
+			}
+			else{
+				$result=$obj->syncCheck();
+				dump($result);
+			}
+		}
 	}
 
 }
