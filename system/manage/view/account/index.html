@@ -1,0 +1,142 @@
+<div class='dvBox'>
+	<div class='boxTitle'>
+		<h4>{$formName|default='页面信息'}&nbsp;&nbsp;<small>{$formInfo|default=''}</small></h4>
+
+		<!-- <a class='btn rightAlign' href='{$optUrl|default='javascript:history.back();'}'><i class'glyphicon glyphicon-hand-left'></i>&nbsp;{$optName|default='返回'}</a> -->
+	</div>
+	<div class='boxContent boxContentTable'>
+		<div class='dvNav'>
+			<!-- <a href='javascript:void(0);' id='submit' class='btn btn-info btn-sm' data-module='' data-controller='' data-action='' data-id='0'><i class='glyphicon glyphicon-plus'></i>添加账号</a>
+			<a href='javascript:void(0);' id='submit' class='btn btn-info btn-sm' data-module='' data-controller='' data-action='' data-id='0'><i class='glyphicon glyphicon-plus'></i>添加账号</a> -->
+			<div class='clear'></div>
+		</div>
+		<hr class='seporator'/>
+		<table class='table table-striped table-bordered table-hover table-condensed'>
+			<thead>
+				<tr>
+					<th>编号</th>
+					<th>微信名称</th>
+					<th>微信账号</th>
+					<th>淘宝客名称</th>
+					<th>淘宝客账号</th>
+					<th>导购编号</th>
+					<th>推广位编号</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tfoot>
+				<tr>
+					<td colspan='10'>
+						<div class='page'>
+							<div class='pgNavigation pgPre <eq name="page.curPgIdx" value="1">disabled</eq>' data-page='{$page["curPgIdx"]-1}' data-module='' data-controller='' data-action='index' data-param=''>
+								<a href='javascript:void(0);'>
+									<i class='glyphicon glyphicon-arrow-left'></i>
+									上一页
+								</a>
+							</div>
+							<div class='pgInfo'>
+								<i class='glyphicon glyphicon-hand-right'></i> 第 {$page.curPgIdx} 页 • 共 {$page.pgCnt} 页 •{$page.rcdCnt} 条 记录 <i class='glyphicon glyphicon-hand-left'></i>
+							</div>
+							<div class='pgNavigation pgNxt <if condition="$page.curPgIdx eq $page['pgCnt'] or $page.pgCnt eq 0">disabled</if>' data-page='{$page["curPgIdx"]+1}' data-module='' data-controller='' data-action='index' data-param=''>
+								<a href='javascript:void(0);'>
+									下一页
+									<i class='glyphicon glyphicon-arrow-right'></i>
+								</a>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</tfoot>
+			<tbody>
+				<volist name='data' id='list'>
+					<tr>
+						<td>{++$page['startIdx']}</td>
+						<td class='left'>{$list.wxName}</td>
+						<td class='left'>{$list.wxId}</td>
+						<td class='left'>{$list.tbkName}</td>
+						<td>{$list.tbkId}</td>
+						<td>{$list.siteId}</td>
+						<td>{$list.adZoneId}</td>
+						<td class='tbkId-{$list.tbkId}'>
+							<eq name='list.loginStatus' value='true'>
+								已登陆
+							<else/>
+								<a href='javascript:void(0);' data-action='getTbkQrCode' data-originId='{$list.originId}' data-tbkId='{$list.tbkId}' data-tbkName='{$list.tbkName}' class='tbkLogin btn btn-info btn-sm'>登录淘宝客</a>
+							</eq>
+						</td>
+					</tr>
+				</volist>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div id='qrImg' style='text-align:center;'>
+	<img src='https://img.alicdn.com/tfscom/TB12J6krbsTMeJjSszdwu3EupXa.png'>
+	<p>登录账号：<span style='color:#FF0000;'></span></p>
+	<p>请打开手淘并扫码登录</p>
+</div>
+
+<input type='hidden' id='module' value='{$Request.module}'>
+<input type='hidden' id='controller' value='{$Request.controller}'>
+
+<link rel='stylesheet' type='text/css' href='__STATIC__/css/page.css'/>
+<link rel='stylesheet' type='text/css' href='__STATIC__/css/tableStyle.css'/>
+<script type='text/javascript'>
+	var lgToken='';
+	var module=$('#module').val();
+	var controller=$('#controller').val();
+
+	var qrImgDialog=$('#qrImg').dialog({
+		autoOpen:false,
+		modal:true,
+		title:'淘宝客登录二维码',
+		show: {
+			effect: 'explode',
+			duration: 1000
+		},
+		hide: {
+			effect: 'explode',
+			duration: 1000
+		}
+	});
+
+	$('.tbkLogin').click(function(){
+		var originId=$(this).attr('data-originId');
+		var tbkId=$(this).attr('data-tbkId');
+		var action=$(this).attr('data-action');
+		var tbkName=$(this).attr('data-tbkName');
+		var url='index.php/'+module+'/'+controller+'/'+action;
+		$.post(url,{tbkId:tbkId,originId:originId},function(rst){
+			if(rst.status){
+				$('#qrImg img').attr('src',rst.qrImg);
+				$('#qrImg span').text(tbkName);
+				qrImgDialog.dialog('open');
+				waitTBKLogin(tbkId,originId,rst.lgToken);
+			}
+		});
+	});
+
+	function waitTBKLogin(tbkId,originId,lgToken){
+		var url='/index.php/'+module+'/'+controller+'/tbkLogin';
+		$.post(url,{tbkId:tbkId,originId:originId,lgToken:lgToken},function(rst){
+			if(rst.status){
+				qrImgDialog.dialog('close');
+				var url='/index.php/'+module+'/'+controller+'/tbkRedirect';
+				$.post(url,{tbkId:tbkId,originId:originId},function(rst){
+					if(rst.status){
+						$('.tbkId-'+tbkId).text('已登录');
+					}
+					else{
+						$.alert({info:'登录失败，请重新执行'});
+					}
+				});
+			}
+			else{
+				setTimeout(function(){
+					waitTBKLogin(tbkId,originId,lgToken);
+				},3000);
+			}
+		});
+	}
+</script>
