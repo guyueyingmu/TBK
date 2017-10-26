@@ -629,8 +629,8 @@ class WeChat{
 		if(!empty($originId)){
 			$mdl=Loader::model('Account');
 			$whereAry=['originId'=>$originId,'isValid'=>1];
-			$fieldAry=['wxName','wxId','userId','originId','appId','appSecrect','aesKey','macId','key','tbkName','tbkId','tbkPassword','siteId','adZoneId'];
-			$cfg=$mdl->getInfo(['where'=>$whereAry,'field'=>$fieldAry]);
+			//$fieldAry=['wxName','wxId','userId','originId','appId','appSecrect','aesKey','macId','key','tbkName','tbkId','tbkPassword','siteId','adZoneId'];
+			$cfg=$mdl->getInfo(['where'=>$whereAry]);
 			if(!empty($cfg)){
 				Cache::set('WX_'.$originId,$cfg);
 				return true;
