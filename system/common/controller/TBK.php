@@ -144,7 +144,7 @@ class TBK{
 	//获取优惠券数据
 	public function getCouponItems($kw){
 		$param=['shopTag'=>'b2c,dpyhq',''];
-		$result=$this->search($kw,$param);
+		$result=$this->searchItems($kw,$param);
 		return $result;
 	}
 
