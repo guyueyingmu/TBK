@@ -331,7 +331,7 @@ class WeChat{
 
 		//个人信息
 		if($content=='个人信息'){
-			$msg=$this->msgForUserInfo($opneId);
+			$msg=$this->msgForUserInfo($openId);
 			return $msg;
 		}
 
@@ -385,12 +385,12 @@ class WeChat{
 	}
 
 	//处理订单号
-	private function msgForOrder($orderId,$opneId){
+	private function msgForOrder($orderId,$openId){
 		return '敬请期待！';
 	}
 
 	//处理个人信息消息
-	private function msgForUserInfo($opneId){
+	private function msgForUserInfo($openId){
 		return '敬请期待！';
 	}
 
