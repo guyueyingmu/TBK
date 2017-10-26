@@ -348,13 +348,13 @@ class WeChat{
 				$kw=$matchResult[1];
 				$url=$matchResult[2];
 
-				$msg=$this->msgForShare($kw,$url);
+				$msg=$this->msgForShare($obj,$kw,$url);
 			}
 
 			//搜索+kw
 			if(mb_substr($content,0,2)=='搜索'){
 				$kw=mb_substr($content,2);
-				$msg=$this->msgForSear($kw);
+				$msg=$this->msgForSear($obj,$kw);
 				return $msg;
 			}
 
