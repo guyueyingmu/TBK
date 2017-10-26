@@ -98,7 +98,9 @@ class WeChat{
 		$mdl=Loader::model('User');
 		$mdl->edit(['where'=>$whereAry,'data'=>$saveData]);
 
-		$responseData['Content']="你好！\n欢迎使用【".$this->getConfig('name')."】！\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n🔥好友推荐的朋友请向你的好友索要她的邀请码.\n非好友邀请的亲,回复【10000】 领取关注红包. \n👉 有问题回复【帮助】\n👉 查看使用教程\n http://t.cn/RK37GMb\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
+		$cfg=$this->getConfig();
+
+		$responseData['Content']="你好！\n欢迎使用【".$cfg['name']."】！\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n🔥好友推荐的朋友请向你的好友索要她的邀请码.\n非好友邀请的亲,回复【10000】 领取关注红包. \n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
 		return $this->textResponse($responseData);
 	}
 
@@ -135,7 +137,7 @@ class WeChat{
 			'FromUserName'=>$postData['ToUserName'],
 		);
 
-		$responseData['Content']=$this->dealTxtMsg($postData['Content']);
+		$responseData['Content']=$this->dealTxtMsg($postData['Content'],$postData['FromUserName']);
 		return $this->textResponse($responseData);
 	}
 
@@ -428,7 +430,7 @@ class WeChat{
 				}
 
 				$mdl->commit();
-				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n http://t.cn/RNZid59\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
+				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$this->getConfig('tutorialLink')."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
 			}
 		}
 
@@ -463,7 +465,7 @@ class WeChat{
 
 				$linkInfo=$obj->getLink($itemId,$cfg['sitId'],$cfg['adZoneId']);
 				if(!empty($linkInfo)){
-					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink']."\n\n";
+					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink']."\n\n机器人已整理好所有【".$kw."】共计【".$couponItemCnt."】个优惠券，点击下面链接进行领券购买，如关键字获取不准确，您可以进入领券页面直接输入关键字搜索：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
 				}
 			}
 		}
