@@ -337,7 +337,9 @@ class Base extends Controller{
 
 	public function tstx(){
 		$obj=new TBK('128077217','gh_efba84cec87e');
-dump(Url::build('/login'));return;
+		$wxObj=new WeChat();
+		$rst=$wxObj->msgForInvitation('00000','okLYjvzPSqQ1jdDHDZgM8tL6r_Zg');
+		dump($rst);return;
 		// $str='10000 ';
 		// $rgx='/^\d{5}$/';
 		// if(preg_match($rgx,$str,$data)){

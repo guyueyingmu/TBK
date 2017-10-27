@@ -395,7 +395,7 @@ class WeChat{
 	}
 
 	//处理邀请码消息
-	private function msgForInvitation($code,$openId){
+	public function msgForInvitation($code,$openId){
 		$mdl=Loader::model('User');
 		$invitedInfo=$mdl->getInfo(['where'=>['openId'=>$openId]]);
 		if($invitedInfo['fromUserId']==0){
@@ -431,7 +431,7 @@ class WeChat{
 				}
 
 				$mlMdl=Loader::model('MoneyLog');
-				$result=$mlMdl->add(['type'=>1,'userId'=>$invitedInfo['id'],'money'=>$invitedMoney,'relatedUserId'=>$fromId);
+				$result=$mlMdl->add(['type'=>1,'userId'=>$invitedInfo['id'],'money'=>$invitedMoney,'relatedUserId'=>$fromId]);
 				if($result===false){
 					$mdl->rollback();
 					Log::write('关注资金纪录失败：'.$mlMdl->getLastSql());
