@@ -58,7 +58,7 @@ class Base extends Controller{
 					}
 				}
 				else{
-					$this->redirect(Url::build('/login'));
+					$this->redirect('/login');
 				}
 			}
 		}
@@ -337,16 +337,16 @@ class Base extends Controller{
 
 	public function tstx(){
 		$obj=new TBK('128077217','gh_efba84cec87e');
-
-		$str='10000 ';
-		$rgx='/^\d{5}$/';
-		if(preg_match($rgx,$str,$data)){
-			dump($data);
-		}
-		else{
-			dump('not match');
-		}
-		return;
+dump(Url::build('/login'));return;
+		// $str='10000 ';
+		// $rgx='/^\d{5}$/';
+		// if(preg_match($rgx,$str,$data)){
+		// 	dump($data);
+		// }
+		// else{
+		// 	dump('not match');
+		// }
+		// return;
 
 		$id=557690220188;
 		$kw='2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤';
@@ -358,16 +358,25 @@ class Base extends Controller{
 		// $itemInfo=$obj->getItemInfo($kw,$id);
 		// dump($itemInfo);return;
 
-		$result=$obj->getLink($id);
-		dump($result);
-		return;
+		// $result=$obj->getLink($id);
+		// dump($result);
+		// return;
 
 		$str='【【天猫超市】3M 9001V防雾霾粉尘带呼吸阀3只装PM2.5折叠式口罩】http://a.fwg6.com/h.Gz96Us?sm=31ae80 点击链接，再选择浏览器打开；或复制这条信息￥nZor05T7VN7￥后打开👉手机淘宝👈';
-		$str='【我剁手都要买的宝贝（2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤），快来和我一起瓜分红I包】http://w.yre0.com/h.FeMt6k 点击链接，再选择浏览器打开；或复制这条信息￥09Uv0gNrUaB￥后打开手淘';
+		//$str='【我剁手都要买的宝贝（2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤），快来和我一起瓜分红I包】http://w.yre0.com/h.FeMt6k 点击链接，再选择浏览器打开；或复制这条信息￥09Uv0gNrUaB￥后打开手淘';
 		$rgx='/【(.*)】.*(http:\/\/\S+)/';
-		if(preg_match($rgx,$str,$matchResult)){dump($matchResult);
+
+		if(preg_match($rgx,$str,$matchResult)){dump($matchResult);;
 			$kw=$matchResult[1];
 			$url=$matchResult[2];
+
+			$rgx='/.*（(.*?)）.*/';
+			if(preg_match($rgx,$kw,$matchResult)){dump($matchResult);;
+				$kw=$matchResult[1];
+			}
+
+			dump($kw);
+			return;
 			$id=TBK::getItemId($url);
 			if(!empty($id)){
 				$itemInfo=$obj->getItemInfo($kw,$id);

@@ -399,22 +399,23 @@ class WeChat{
 		$mdl=Loader::model('User');
 		$invitedInfo=$mdl->getInfo(['where'=>['openId'=>$openId]]);
 		if($invitedInfo['fromUserId']==0){
-			$fromUserId=intval($code)-10000;
-			$fromUserId=$fromUserId==0?$cfg['userId']:$fromUserId;
-			$fromUserInfo=$mdl->getInfo(['where'=>['id'=>$fromUserId]]);
-			if(!empty($fromUserInfo)){
+			$cfg=$this->getConfig();
+			$fromId=intval($code)-10000;
+			$fromId=$fromId==0?$cfg['userId']:$fromId;
+			$fromInfo=$mdl->getInfo(['where'=>['id'=>$fromId]]);
+			if(!empty($fromInfo)){
 				$mony=$this->getInviteMoney();
 				$invitedMoney=$this->getInviteMoney();
 
 				$mdl->startTrans();
-				$result=$mdl->edit(['where'=>['id'=>$invitedInfo['id']],'data'=>['fromUserId'=>$fromUserId,'money'=>['exp','money'+$invitedMoney]]]);
+				$result=$mdl->edit(['where'=>['id'=>$invitedInfo['id']],'data'=>['fromUserId'=>$fromId,'money'=>['exp','money'+$invitedMoney]]]);
 				if($result==false){
 					$mdl->rollback();
 					Log::write('关注赠送失败：'.$mdl->getLastSql());
 					return '请重新发送您的邀请码！';
 				}
 
-				$result=$mdl->edit(['where'=>['id'=>$fromUserId],'data'=>['money'=>['exp','money'+$money]]]);
+				$result=$mdl->edit(['where'=>['id'=>$fromId],'data'=>['money'=>['exp','money'+$money]]]);
 				if($result===false){
 					$mdl->rollback();
 					Log::write('邀请赠送失败：'.$mdl->getLastSql());
@@ -422,16 +423,37 @@ class WeChat{
 				}
 
 				$ivtMdl=Loader::model('Invitation');
-				$result=$ivtMdl->add(['userId'=>$fromUserId,'money'=>$money,'invitedUserId'=>$invitedInfo['id'],'invitedMoney'=>$invitedMoney]);
+				$result=$ivtMdl->add(['userId'=>$fromId,'money'=>$money,'invitedUserId'=>$invitedInfo['id'],'invitedMoney'=>$invitedMoney]);
 				if($result===false){
 					$mdl->rollback();
-					Log::write('邀请纪录失败：'.$ivtMdl->getLastSql());
+					Log::write('关注纪录失败：'.$ivtMdl->getLastSql());
+					return '请重新发送您的邀请码！';
+				}
+
+				$mlMdl=Loader::model('MoneyLog');
+				$result=$mlMdl->add(['type'=>1,'userId'=>$invitedInfo['id'],'money'=>$invitedMoney,'relatedUserId'=>$fromId);
+				if($result===false){
+					$mdl->rollback();
+					Log::write('关注资金纪录失败：'.$mlMdl->getLastSql());
+					return '请重新发送您的邀请码！';
+				}
+
+				$result=$mlMdl->add(['type'=>2,'userId'=>$fromId,'money'=>$money,'relatedUserId'=>$invitedInfo['id']]);
+				if($result===false){
+					$mdl->rollback();
+					Log::write('邀请资金纪录失败：'.$mlMdl->getLastSql());
 					return '请重新发送您的邀请码！';
 				}
 
 				$mdl->commit();
-				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$this->getConfig('tutorialLink')."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
+				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
 			}
+			else{
+				return '您提交的邀请码无效！';
+			}
+		}
+		else{
+			return '您已成功提交过邀请吗！';
 		}
 
 		return '';
@@ -465,7 +487,7 @@ class WeChat{
 				$coupon=$itemInfo['couponAmount'];
 				$rebate=$itemInfo['tkCommFee'];
 
-				$linkInfo=$obj->getLink($itemId,$cfg['siteId'],$cfg['adZoneId']);
+				$linkInfo=$obj->getLink($itemId,$cfg['siteId'],$cfg['adZoneId']);Log::write('LK:'.var_export($linkInfo,true));
 				if(!empty($linkInfo)){
 					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink']."\n\n机器人已整理好所有【".$kw."】共计【".$couponItemCnt."】个优惠券，点击下面链接进行领券购买，如关键字获取不准确，您可以进入领券页面直接输入关键字搜索：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
 				}
