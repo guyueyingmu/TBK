@@ -44,13 +44,18 @@ class Base extends Model{
 		return empty($pageInfo)?$ary:['data'=>$ary,'page'=>$pageInfo];
 	}
 
-	public function add($dataAry){
+	public function add($dataAry,$isAll=false){
 		if (empty($dataAry)||!is_array($dataAry)) {
 			return false;
 		}
 
-		$rst=$this->isUpdate(false)->save($dataAry);
-		$rst=$rst===false?false:$this[$this->getPk()];
+		if($isAll){
+			$rst=$this->saveAll($dataAry,false);
+		}
+		else{
+			$rst=$this->isUpdate(false)->save($dataAry);
+			$rst=$rst===false?false:$this[$this->getPk()];
+		}
 
 		return $rst;
 	}

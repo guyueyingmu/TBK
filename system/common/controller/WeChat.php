@@ -12,6 +12,10 @@ class WeChat{
 
 	private $originId=null;
 
+	public function __construct($originId=null){
+		$this->originId=$originId;
+	}
+
 	public function index(){
 		$request=Request::instance();
 
@@ -308,7 +312,7 @@ class WeChat{
 	}
 
 	//处理文本消息内容
-	private function dealTxtMsg($content,$openId){
+	public function dealTxtMsg($content,$openId){
 		$content=trim($content);
 		$cfg=$this->getConfig();
 
@@ -322,6 +326,12 @@ class WeChat{
 			return $msg;
 		}
 
+		//个人信息
+		if($content=='个人信息'){
+			$msg=$this->msgForUserInfo($openId);
+			return $msg;
+		}
+
 		//邀请码
 		$rgx='/^\d{5}$/';
 		if(preg_match($rgx,$content,$matchResult)){
@@ -329,54 +339,43 @@ class WeChat{
 			return $msg;
 		}
 
-		//个人信息
-		if($content=='个人信息'){
-			$msg=$this->msgForUserInfo($openId);
-			return $msg;
-		}
+
 
 
 		$obj=new TBK($cfg['tbkId'],$cfg['originId']);
-
+		$loginStatus=$obj->isLogin();
 		$defaultMsg="⭕ 抱歉,淘宝太忙了，请稍后重试！\n━┉┉┉┉∞┉┉┉┉━\n👉 查看使用教程\n".$cfg['tutorialLink'];
 
-		$loginStatus=$obj->isLogin();
-		if($loginStatus['status']){
-			//淘宝分享
-			$rgx='/【(.*)】.*(http:\/\/\S+)/';
-			if(preg_match($rgx,$content,$matchResult)){
-				$kw=$matchResult[1];
-				$url=$matchResult[2];
-
-				$msg=$this->msgForShare($obj,$kw,$url);
-			}
-
-			//搜索+kw
-			if(mb_substr($content,0,2)=='搜索'){
-				$kw=mb_substr($content,2);
-				$msg=$this->msgForSear($obj,$kw);
-				return $msg;
-			}
-
-
-			//订单号
-			$rgx='/^\d{17}$/';
-			if(preg_match($rgx,$content,$matchResult)){
-				$msg=$this->msgForOrder($content,$openId);
-				return $msg;
-			}
+		//订单号
+		$rgx='/^\d{17}$/';
+		if(preg_match($rgx,$content,$matchResult)){
+			$msg=$loginStatus['status']?$this->msgForOrder($content,$openId):$defaultMsg;
+			return $msg;
 		}
 
-		return $defaultMsg;
-	}
+		//淘宝分享
+		$rgx='/【(.*)】.*(http:\/\/\S+)/';
+		if(preg_match($rgx,$content,$matchResult)){
+			$kw=$matchResult[1];
+			$url=$matchResult[2];
 
-	//处理搜索
-	private function msgForSearch($obj,$kw){
-		$couponItems=$obj->getCouponItems($kw);
-		$cnt=$couponItems['count'];
+			$rgx='/.*（(.*?)）.*/';
+			if(preg_match($rgx,$kw,$matchResult)){
+				$kw=$matchResult[1];
+			}
 
-		$msg="机器人已整理好所有【".$kw."】共计【".$cnt."】个优惠券，点击下面链接进行领券购买：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
-		return $msg;
+			$msg=$loginStatus['status']?$this->msgForShare($obj,$kw,$url):$defaultMsg;
+			return $msg;
+		}
+
+		//搜索+kw
+		if(mb_substr($content,0,2)=='搜索'){
+			$kw=mb_substr($content,2);
+			$msg=$loginStatus['status']?$this->msgForSearch($obj,$kw):$defaultMsg;
+			return $msg;
+		}
+
+		return '';
 	}
 
 	//处理提现
@@ -395,7 +394,7 @@ class WeChat{
 	}
 
 	//处理邀请码消息
-	public function msgForInvitation($code,$openId){
+	private function msgForInvitation($code,$openId){
 		$mdl=Loader::model('User');
 		$invitedInfo=$mdl->getInfo(['where'=>['openId'=>$openId]]);
 		if($invitedInfo['fromUserId']==0){
@@ -404,18 +403,18 @@ class WeChat{
 			$fromId=$fromId==0?$cfg['userId']:$fromId;
 			$fromInfo=$mdl->getInfo(['where'=>['id'=>$fromId]]);
 			if(!empty($fromInfo)){
-				$mony=$this->getInviteMoney();
+				$money=$this->getInviteMoney();
 				$invitedMoney=$this->getInviteMoney();
 
 				$mdl->startTrans();
-				$result=$mdl->edit(['where'=>['id'=>$invitedInfo['id']],'data'=>['fromUserId'=>$fromId,'money'=>['exp','money'+$invitedMoney]]]);
+				$result=$mdl->edit(['where'=>['id'=>$invitedInfo['id']],'data'=>['fromUserId'=>$fromId,'money'=>['exp','money+'.$invitedMoney]]]);
 				if($result==false){
 					$mdl->rollback();
 					Log::write('关注赠送失败：'.$mdl->getLastSql());
 					return '请重新发送您的邀请码！';
 				}
 
-				$result=$mdl->edit(['where'=>['id'=>$fromId],'data'=>['money'=>['exp','money'+$money]]]);
+				$result=$mdl->edit(['where'=>['id'=>$fromId],'data'=>['money'=>['exp','money+'.$money]]]);
 				if($result===false){
 					$mdl->rollback();
 					Log::write('邀请赠送失败：'.$mdl->getLastSql());
@@ -431,29 +430,26 @@ class WeChat{
 				}
 
 				$mlMdl=Loader::model('MoneyLog');
-				$result=$mlMdl->add(['type'=>1,'userId'=>$invitedInfo['id'],'money'=>$invitedMoney,'relatedUserId'=>$fromId]);
+				$mlData=[
+					['type'=>2,'userId'=>$fromId,'money'=>$money,'relatedUserId'=>$invitedInfo['id']],
+					['type'=>1,'userId'=>$invitedInfo['id'],'money'=>$invitedMoney,'relatedUserId'=>$fromId]
+				];
+				$result=$mlMdl->add($mlData,true);
 				if($result===false){
 					$mdl->rollback();
 					Log::write('关注资金纪录失败：'.$mlMdl->getLastSql());
 					return '请重新发送您的邀请码！';
 				}
 
-				$result=$mlMdl->add(['type'=>2,'userId'=>$fromId,'money'=>$money,'relatedUserId'=>$invitedInfo['id']]);
-				if($result===false){
-					$mdl->rollback();
-					Log::write('邀请资金纪录失败：'.$mlMdl->getLastSql());
-					return '请重新发送您的邀请码！';
-				}
-
 				$mdl->commit();
-				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1 、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
+				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
 			}
 			else{
 				return '您提交的邀请码无效！';
 			}
 		}
 		else{
-			return '您已成功提交过邀请吗！';
+			return '您已成功提交过邀请码！';
 		}
 
 		return '';
@@ -464,17 +460,32 @@ class WeChat{
 		return mt_rand($min,$max)/100;
 	}
 
+	//处理搜索
+	private function msgForSearch($obj,$kw){
+		$msg='';
+		if(!empty($kw)){
+			$couponItems=$obj->getCouponItems($kw);
+			if(!empty($couponItems)){
+				$cnt=$couponItems['count'];
+
+				$msg="机器人已整理好所有【".$kw."】共计【".$cnt."】个优惠券，点击下面链接进行领券购买：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
+			}
+		}
+
+		return $msg;
+	}
+
 	//处理淘宝分享的消息
 	private function msgForShare($obj,$kw,$url){
 		$couponItems=$obj->getCouponItems($kw);
-		$couponItemCnt=$couponItems['count'];
 
+		$msg='';
 		$cfg=$this->getConfig();
 
 		$itemId=TBK::getItemId($url);
 		if(!empty($itemId)){
 			$itemInfo=$obj->getItemInfo($kw,$itemId);
-			if(empty($itemInfo)&&!empty($couponItems['data'])){
+			if(empty($itemInfo)&&!empty($couponItems)){
 				$itemInfo=$couponItems['data'][0];
 				$msg="**************\n您所查询的商品没有优惠，机器人为您查询到了同标题商品，【商品价格】可能会不一致，请谨慎购买！\n**************\n\n【".$kw."】";
 			}
@@ -488,13 +499,24 @@ class WeChat{
 				$rebate=$itemInfo['tkCommFee'];
 
 				$linkInfo=$obj->getLink($itemId,$cfg['siteId'],$cfg['adZoneId']);Log::write('LK:'.var_export($linkInfo,true));
-				if(!empty($linkInfo)){
-					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink']."\n\n机器人已整理好所有【".$kw."】共计【".$couponItemCnt."】个优惠券，点击下面链接进行领券购买，如关键字获取不准确，您可以进入领券页面直接输入关键字搜索：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
+				$linkInfo=json_decode($linkInfo,true);
+				if(!empty($linkInfo)&&isset($linkInfo['data'])&&!empty($linkInfo['data'])){
+					$linkInfo=$linkInfo['data'];
+					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink'];
+					if(!empty($couponItems)){
+						$msg.="\n\n机器人已整理好所有【".$kw."】共计【".$couponItems['count']."】个优惠券，点击下面链接进行领券购买，如关键字获取不准确，您可以进入领券页面直接输入关键字搜索：\n━┉┉┉┉∞┉┉┉┉━\n".$this->getCouponLink($kw)."\n━┉┉┉┉∞┉┉┉┉━";
+					}
 				}
 			}
 		}
 
 		return $msg;
+	}
+
+	private function getCouponLink($kw){
+		$cfg=$this->getConfig();
+		$link=trim($cfg['domain'],'/').'/list/'.$cfg['originId'].'/'.$kw;
+		return $link;
 	}
 
 	//回复文本信息
