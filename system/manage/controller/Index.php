@@ -28,7 +28,7 @@ class Index extends Base{
 			return view();
 		}
 		else{
-			$this->error(['msg'=>$result['msg']]);
+			$this->error($result['msg']);
 		}
 	}
 

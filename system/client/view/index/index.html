@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>优惠券</title>
+		<meta charset='utf-8'>
+		<meta name='viewport' content='maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0'/>
+		<meta name='format-detection' content='telephone=no,email=no,date=no,address=no'>
+		<link rel='stylesheet' type='text/css' href='__STATIC__/plugin/aui/aui.css'>
+		<link rel='stylesheet' type='text/css' href='__STATIC__/plugin/aui/aui-pull-refresh.css'>
+		<style type='text/css'>
+			header{
+				position:fixed !important;
+				top:0rem;
+			}
+
+			.aui-bar .aui-pull-left{
+				font-size:1.2rem;
+			}
+
+			.aui-bar .aui-title{
+				left:4rem;
+				right:0.5rem;
+			}
+
+			.aui-searchbar{
+				background:transparent;
+			}
+
+			.aui-bar-nav .aui-searchbar-input{
+				background-color:#ffffff;
+			}
+
+			.aui-bar-light .aui-searchbar-input{
+				background-color:#f5f5f5;
+			}
+
+			.aui-content{
+				margin-top:2.25rem;
+			}
+
+			.aui-list{
+				padding:0rem 0.5rem !important;
+				background:transparent;
+			}
+
+			.aui-list-item{
+				padding:0rem !important;
+				background-image:url('__STATIC__/img/couponBg.png') !important;
+				background-size:100% 100% !important;
+			}
+
+			.aui-media-list-item-inner{
+				width:73%;
+			}
+
+			.aui-list-item *{
+				font-size:0.6rem !important;
+				line-height:0.75rem !important;
+			}
+
+			.aui-list-item-media{
+				padding:0.5rem !important;
+			}
+
+			.aui-list-item-inner{
+				font-size:0.8rem;
+				padding-right:0rem !important;
+			}
+
+			.aui-info{
+				padding:0rem;
+				margin-top:0.2rem;
+			}
+
+			.price >:first-child{
+				text-decoration:line-through;
+			}
+
+			.price >:last-child span{
+				color:#F06000 !important;
+				font-size:1rem !important;
+				margin-top:-0.25rem;
+				display:inline-block;
+			}
+
+
+
+			.receive{
+				width:26%;
+				height:100%;
+				position:absolute;
+				right:0rem;
+				top:0rem;
+				text-align:center;
+			}
+
+			.receive *{
+				color:#FFFFFF;
+			}
+
+			.receive > :first-child{
+				margin-top:0.75rem;
+				font-weight:lighter;
+			}
+
+			.receive > :first-child span{
+				font-size:1.5rem !important;
+				font-weight:normal;
+			}
+
+			.receive > :last-child{
+				position:absolute;
+				bottom:0.5rem;
+				width:100%;
+				font-size:0.75rem !important;
+			}
+
+			#loadMore{
+				width:65%;
+				text-align:center;
+				border-top:1px solid #E5E5E5;
+				margin:1.25rem auto 0rem;
+			}
+
+			#loadMore .txt{
+				padding:0 0.25rem;
+				background:#F5F5F5;
+				position:relative;
+				top:-0.65rem;
+				color:#666666;
+			}
+
+			#loadMore .aui-refresh-pull-arrow{
+				display:none;
+				position:relative;
+				margin-bottom:0.5rem;
+
+			}
+		</style>
+	</head>
+	<body>
+		<header class='aui-bar aui-bar-nav aui-bar-light'>
+			<a class='aui-pull-left aui-btn aui-text-info'>
+				优惠券
+			</a>
+			<div class='aui-title'>
+				<div class='aui-searchbar' id='search'>
+					<div class='aui-searchbar-input aui-border-radius'>
+						<i class='aui-iconfont aui-icon-search'></i>
+						<input type='search' placeholder='请输入搜索内容' id='search-input'>
+						<div class='aui-searchbar-clear-btn'>
+							<i class='aui-iconfont aui-icon-close'></i>
+						</div>
+					</div>
+					<div class='aui-searchbar-btn' tapmode=''>取消</div>
+				</div>
+			</div>
+		</header>
+		<section class='aui-content'>
+			<ul class='aui-list aui-media-list'>
+				<li class='aui-list-item aui-margin-t-10'>
+					<div class='aui-media-list-item-inner'>
+						<div class='aui-list-item-media'>
+							<img src='img.png'>
+						</div>
+						<div class='aui-list-item-inner'>
+							<div class='aui-list-item-text'>
+								<div class='aui-list-item-title'>ISK 专业网络主播K歌录音入耳式监听耳塞 录音专用耳机</div>
+							</div>
+							<div class='aui-info price'>
+								<div class='aui-info-item'>原价：¥98</div>
+								<div class='aui-info-item'>券后：¥<span>33</span></div>
+							</div>
+							<div class='aui-info'>
+								<div class='aui-info-item'>月销：33</div>
+								<div class='aui-info-item'>商家：欧美特羊绒</div>
+							</div>
+						</div>
+					</div>
+					<div data-clipboard-text='¥5iid9efi¥' class='receive'>
+						<div>
+							<p>¥<span>20</span></p>
+							<p>余：200张</p>
+						</div>
+
+						<div class='click'>点击领取</div>
+					</div>
+				</li>
+			</ul>
+			<div id='loadMore' class='aui-refreshing'>
+				<span class='txt'>点击加载更多</span>
+				<div class='aui-refresh-pull-arrow'></div>
+			</div>
+		</section>
+	</body>
+
+	<script type='text/javascript' src='__STATIC__/plugin/jquery.min.js'></script>
+	<script type='text/javascript' src='__STATIC__/plugin/aui/api.js'></script>
+	<script type='text/javascript' src='__STATIC__/plugin/aui/aui-dialog.js'></script>
+	<script type='text/javascript' src='__STATIC__/plugin/clipboard.min.js'></script>
+	<script type='text/javascript'>
+		var searchBar=document.querySelector('.aui-searchbar');
+		var searchBarInput=document.querySelector('.aui-searchbar input');
+		var searchBarBtn=document.querySelector('.aui-searchbar .aui-searchbar-btn');
+		var searchBarClearBtn=document.querySelector('.aui-searchbar .aui-searchbar-clear-btn');
+		if(searchBar){
+			searchBarInput.onclick=function(){
+				searchBarBtn.style.marginRight=0;
+			}
+			searchBarInput.oninput=function(){
+				if(this.value.length){
+					searchBarClearBtn.style.display='block';
+					searchBarBtn.classList.add('aui-text-info');
+					searchBarBtn.textContent='搜索';
+				}
+				else{
+					searchBarClearBtn.style.display='none';
+					searchBarBtn.classList.remove('aui-text-info');
+					searchBarBtn.textContent='取消';
+				}
+			}
+		}
+		searchBarClearBtn.onclick=function(){
+			this.style.display='none';
+			searchBarInput.value='';
+			searchBarBtn.classList.remove('aui-text-info');
+			searchBarBtn.textContent='取消';
+		}
+		searchBarBtn.onclick=function(){
+			var keywords=searchBarInput.value;
+			if(keywords.length){
+				searchBarInput.blur();
+				document.getElementById('search-keywords').textContent=keywords;
+			}
+			else{
+				this.style.marginRight='-'+this.offsetWidth+'px';
+				searchBarInput.value='';
+				searchBarInput.blur();
+			}
+		}
+
+		var loadMore=document.querySelector('#loadMore .txt');
+		loadMore.onclick=function(){
+			this.style.display='none';
+			document.querySelector('#loadMore .aui-refresh-pull-arrow').style.display='block';
+		}
+
+		var dialog=new auiDialog();
+
+		var clipboard=new Clipboard('.receive');
+		clipboard.on('success',function(evn){
+			dialog.alert({
+				title:'复制成功',
+				msg:'您已成功复制该淘口令，打开淘宝APP即可领券购买！',
+				buttons:['确定']
+			},function(ret){
+
+			});
+		});
+
+		clipboard.on('error',function(evn){
+			var token=evn.text;
+			dialog.alert({
+				title:'长按复制',
+				msg:'长按以下淘口令并选择复制</br></br>【'+token+'】</br></br>复制后打开淘宝APP即可领券购买',
+				buttons:['确定']
+			},function(ret){
+
+			});
+		});
+
+	</script>
+</html>

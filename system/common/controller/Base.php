@@ -15,7 +15,7 @@ class Base extends Controller{
 	private $noLogin=[
 		'base'=>['login','loginSubmit','logout','weChatCgi','getSession','getCache','clearCache','error','clearSession','lgk','tstx'],
 		'client'=>[
-			'index'=>['index','tst'],
+			'index'=>['index'],
 		],
 		'manage'=>[],
 	];
@@ -26,12 +26,12 @@ class Base extends Controller{
 		define('ACTION',$this->request->action());
 
 		$code=$this->request->get('code');
-		$state=$this->request->get('state');
-		if(!empty($code)&&$state==$this->oAuthState&&!$this->isLogin()){
-			$weChat=new WeChat();
+		$originId=$this->request->get('state');
+		if(!empty($code)&&!empty($originId)&&!$this->isLogin()){
+			$weChat=new WeChat($originId);
 			$userInfo=$weChat->getOAuthUserInfo($code);
 
-			$this->weChatLogin($userInfo['openid']);
+			$this->weChatLogin($userInfo['openid'],$weChat);
 			if(!$this->isLogin()){
 				Log::write('微信登录失败：登录失败');
 				return $this->error('登录失败');
@@ -48,7 +48,7 @@ class Base extends Controller{
 				}
 			}
 			else if(!(in_array(ACTION,$this->noLogin['base'])||(isset($this->noLogin[MODULE])&&isset($this->noLogin[MODULE][strtolower(CONTROLLER)])&&in_array(ACTION,$this->noLogin[MODULE][strtolower(CONTROLLER)])))){
-				if(in_array(MODULE,['client','operate'])){
+				if(in_array(MODULE,['client'])){
 					try{
 						$this->weChatOAuth();
 						return $this->error('正在登录...');
@@ -66,7 +66,7 @@ class Base extends Controller{
 		// $tradeObj=new WeChatTrade();
 		// $weChatCfg=$tradeObj->getWeChatConfig();
 		// $this->assign('weChatCfg',$weChatCfg);
-		//$this->assign('weChatCfg',['appId'=>'','timestamp'=>'','nonceStr'=>'','signature'=>'']);
+		// $this->assign('weChatCfg',['appId'=>'','timestamp'=>'','nonceStr'=>'','signature'=>'']);
 	}
 
 	protected function permissionVerify($userInfo=null){
@@ -86,18 +86,23 @@ class Base extends Controller{
 	}
 
 	protected function weChatOAuth(){
+		$originId=$this->request->pram('originId');
+		if(empty($originId)){
+			$this->error();
+		}
+
 		$redirectUri=$this->request->url(true);
-		$weChat=new WeChat();
-		$weChat->oAuth($redirectUri,$this->oAuthState);
+		$weChat=new WeChat($originId);
+		$weChat->oAuth($redirectUri,$originId);
 	}
 
-	protected function weChatLogin($openId){
+	protected function weChatLogin($openId,&$weChat){
 		if(empty($openId)){
 			Log::write('微信登录失败：没有openId');
 			return $this->error('登录失败');
 		}
 
-		$weChat=new WeChat();
+		//$weChat=new WeChat();
 		$wcInfo=$weChat->getUserInfo($openId);
 
 		$userMdl=Loader::model('User');
@@ -109,14 +114,15 @@ class Base extends Controller{
 		}
 
 		if(isset($wcInfo['openid'])){
-			$data=[
-				'openId'=>$openId,
-				'nickName'=>$wcInfo['nickname'],
-				'unionId'=>isset($wcInfo['unionid'])?$wcInfo['unionid']:'',
-				'subscribe'=>$wcInfo['subscribe'],
-				'sex'=>$wcInfo['sex'],
-				'img'=>$wcInfo['headimgurl'],
-			];
+		$data=['originId'=>$originId,'openId'=>$openId,'unionId'=>isset($wcInfo['unionid'])?$wcInfo['unionid']:'','groupId'=>$wcInfo['groupid'],'nickName'=>$wcInfo['nickname'],'sex'=>$wcInfo['sex'],'img'=>$wcInfo['headimgurl'],'subscribe'=>$wcInfo['subscribe'],'subscribeTime'=>date('Y-m-d H:i:s',$wcInfo['subscribe_time']),'city'=>$wcInfo['city'],'province'=>$wcInfo['province'],'country'=>$wcInfo['country'],'remark'=>$wcInfo['remark']];
+			// $data=[
+			// 	'openId'=>$openId,
+			// 	'nickName'=>$wcInfo['nickname'],
+			// 	'unionId'=>isset($wcInfo['unionid'])?$wcInfo['unionid']:'',
+			// 	'subscribe'=>$wcInfo['subscribe'],
+			// 	'sex'=>$wcInfo['sex'],
+			// 	'img'=>$wcInfo['headimgurl'],
+			// ];
 
 			if(empty($userInfo)){
 				$data['type']=Config::get('userType.client');
@@ -338,48 +344,33 @@ class Base extends Controller{
 	public function tstx(){
 		$obj=new TBK('128077217','gh_efba84cec87e');
 
-		$wxObj=new WeChat('gh_efba84cec87e');
-
-		$content='【【天猫超市】3M 9001V防雾霾粉尘带呼吸阀3只装PM2.5折叠式口罩】http://a.fwg6.com/h.Gz96Us?sm=31ae80 点击链接，再选择浏览器打开；或复制这条信息￥nZor05T7VN7￥后打开👉手机淘宝👈';
-		$rst=$wxObj->dealTxtMsg($content,'okLYjvzPSqQ1jdDHDZgM8tL6r_Zg');
-		dump($rst);return;
-
+		$rebate=[
+			'0.5'=>[0,2],
+			'0.3'=>[2,10],
+			'0.1'=>[10,100],
+			'0.01'=>[100,1000],
+			'0.001'=>[1000,1000000]
+		];
+		dump(json_encode($rebate));return;
 
 		$id=557690220188;
 		$kw='2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤';
 		//$id=550421236994;
 		$kw='纯棉运动女式九分裤';
-		// $result=$obj->searchItems($kw);
-		// dump($result);return;
 
-		// $itemInfo=$obj->getItemInfo($kw,$id);
-		// dump($itemInfo);return;
+		$lk=$obj->getLink($id);
+		dump($lk);return;
 
-		$result=$obj->getLink($id);
+		$result=$obj->getCouponItems($kw);
 		dump($result);
+
 		return;
 
-		$str='【【天猫超市】3M 9001V防雾霾粉尘带呼吸阀3只装PM2.5折叠式口罩】http://a.fwg6.com/h.Gz96Us?sm=31ae80 点击链接，再选择浏览器打开；或复制这条信息￥nZor05T7VN7￥后打开👉手机淘宝👈';
-		//$str='【我剁手都要买的宝贝（2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤），快来和我一起瓜分红I包】http://w.yre0.com/h.FeMt6k 点击链接，再选择浏览器打开；或复制这条信息￥09Uv0gNrUaB￥后打开手淘';
-		$rgx='/【(.*)】.*(http:\/\/\S+)/';
+		$wxObj=new WeChat('gh_efba84cec87e');
 
-		if(preg_match($rgx,$str,$matchResult)){dump($matchResult);;
-			$kw=$matchResult[1];
-			$url=$matchResult[2];
+		$content='搜索耳机';
 
-			$rgx='/.*（(.*?)）.*/';
-			if(preg_match($rgx,$kw,$matchResult)){dump($matchResult);;
-				$kw=$matchResult[1];
-			}
-
-			dump($kw);
-			return;
-			$id=TBK::getItemId($url);
-			if(!empty($id)){
-				$itemInfo=$obj->getItemInfo($kw,$id);
-				dump($itemInfo);
-			}
-		}
-
+		$rst=$wxObj->dealTxtMsg($content,'okLYjvzPSqQ1jdDHDZgM8tL6r_Zg');
+		dump($rst);return;
 	}
 }

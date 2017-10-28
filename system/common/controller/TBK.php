@@ -142,9 +142,9 @@ class TBK{
 	}
 
 	//获取优惠券数据
-	public function getCouponItems($kw){
+	public function getCouponItems($kw,$pgIdx=1){
 		$param=['shopTag'=>'dpyhq','userType'=>1];
-		$result=$this->searchItems($kw,1,$param);
+		$result=$this->searchItems($kw,$pgIdx,$param);
 		return $result;
 	}
 
@@ -190,9 +190,9 @@ class TBK{
 		$rqstHeader=['referer'=>'https://pub.alimama.com/promo/search/index.htm','x-requested-with'=>'XMLHttpRequest','pragma'=>'no-cache','cache-control'=>'no-cache'];
 		$result=self::curlRequest($url,null,$rqstCookie,$rqstHeader);
 
-		//$data=json_decode($result,true);
+		$linkInfo=json_decode($result['data'],true);dump($linkInfo);
 
-		return $result['data'];
+		return !empty($linkInfo)&&isset($linkInfo['data'])&&!empty($linkInfo['data'])?$linkInfo['data']:null;
 	}
 
 	private function getConfig($name=null){

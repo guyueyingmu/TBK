@@ -13,7 +13,11 @@ class WeChat{
 	private $originId=null;
 
 	public function __construct($originId=null){
-		$this->originId=$originId;
+		if(!empty($originId)){
+			$this->originId=$originId;
+			$this->getConfig();
+		}
+
 	}
 
 	public function index(){
@@ -340,11 +344,16 @@ class WeChat{
 		}
 
 
-
-
 		$obj=new TBK($cfg['tbkId'],$cfg['originId']);
 		$loginStatus=$obj->isLogin();
 		$defaultMsg="⭕ 抱歉,淘宝太忙了，请稍后重试！\n━┉┉┉┉∞┉┉┉┉━\n👉 查看使用教程\n".$cfg['tutorialLink'];
+
+		//搜索+kw
+		if(mb_substr($content,0,2)=='搜索'){
+			$kw=mb_substr($content,2);
+			$msg=$this->msgForSearch($obj,$kw);
+			return $msg;
+		}
 
 		//订单号
 		$rgx='/^\d{17}$/';
@@ -365,13 +374,6 @@ class WeChat{
 			}
 
 			$msg=$loginStatus['status']?$this->msgForShare($obj,$kw,$url):$defaultMsg;
-			return $msg;
-		}
-
-		//搜索+kw
-		if(mb_substr($content,0,2)=='搜索'){
-			$kw=mb_substr($content,2);
-			$msg=$loginStatus['status']?$this->msgForSearch($obj,$kw):$defaultMsg;
 			return $msg;
 		}
 
@@ -468,8 +470,14 @@ class WeChat{
 			if(!empty($couponItems)){
 				$cnt=$couponItems['count'];
 
-				$msg="机器人已整理好所有【".$kw."】共计【".$cnt."】个优惠券，点击下面链接进行领券购买：\n━┉┉┉┉∞┉┉┉┉━\n http://baidu.com\n━┉┉┉┉∞┉┉┉┉━";
+				$msg="机器人已整理好所有【".$kw."】共计【".$cnt."】个优惠券，点击下面链接进行领券购买：\n━┉┉┉┉∞┉┉┉┉━\n ".$this->getCouponLink($kw)."\n━┉┉┉┉∞┉┉┉┉━";
 			}
+			else{
+				$msg='您搜索的【'.$kw.'】没有优惠券';
+			}
+		}
+		else{
+			$msg='关键词不能为NULL';
 		}
 
 		return $msg;
@@ -496,16 +504,17 @@ class WeChat{
 			else{
 				$price=$itemInfo['zkPrice'];
 				$coupon=$itemInfo['couponAmount'];
-				$rebate=$itemInfo['tkCommFee'];
+				$rebate=getRebate($itemInfo['tkCommFee'],$cfg['rebate']);
 
-				$linkInfo=$obj->getLink($itemId,$cfg['siteId'],$cfg['adZoneId']);Log::write('LK:'.var_export($linkInfo,true));
-				$linkInfo=json_decode($linkInfo,true);
-				if(!empty($linkInfo)&&isset($linkInfo['data'])&&!empty($linkInfo['data'])){
-					$linkInfo=$linkInfo['data'];
+				$linkInfo=$obj->getLink($itemId,$cfg['siteId'],$cfg['adZoneId']);
+				if(!empty($linkInfo)&&isset($linkInfo['taoToken'])){
 					$msg="【".$kw."】\n━┉┉┉┉∞┉┉┉┉━\n☞ 原价：".$price.($coupon>0?"\n☞ 优惠：".$coupon.'元':'')."\n☞ 口令：".(isset($linkInfo['couponLinkTaoToken'])?$linkInfo['couponLinkTaoToken']:$linkInfo['taoToken'])."\n☞ 返利：".$rebate."元\n━┉┉┉┉∞┉┉┉┉━\n👉 长按复制本条信息,打开淘宝APP,就可以省钱下单啦！\n━┉┉┉┉∞┉┉┉┉━\n⭕ 不可以使用支付宝红包、淘金币等进行减款.\n━┉┉┉┉∞┉┉┉┉━\n🔥 下单后请务必将订单号发送给我哦\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink'];
 					if(!empty($couponItems)){
 						$msg.="\n\n机器人已整理好所有【".$kw."】共计【".$couponItems['count']."】个优惠券，点击下面链接进行领券购买，如关键字获取不准确，您可以进入领券页面直接输入关键字搜索：\n━┉┉┉┉∞┉┉┉┉━\n".$this->getCouponLink($kw)."\n━┉┉┉┉∞┉┉┉┉━";
 					}
+				}
+				else{
+					$msg='转链失败：'.var_export($linkInfo,true);
 				}
 			}
 		}
@@ -515,8 +524,9 @@ class WeChat{
 
 	private function getCouponLink($kw){
 		$cfg=$this->getConfig();
-		$link=trim($cfg['domain'],'/').'/list/'.$cfg['originId'].'/'.$kw;
-		return $link;
+		$link=trim($cfg['domain'],'/').'/couponList/'.$cfg['originId'].'/'.$kw;
+		$shortLing=getSinaShortLink($link);
+		return $shortLing;
 	}
 
 	//回复文本信息
@@ -545,13 +555,13 @@ class WeChat{
 	}
 
 	public function oAuth($redirectUri,$state='',$scope='snsapi_base'){
-		$url='https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri='.urlencode($redirectUri).'&response_type=code&scope='.$scope.'&state='.$state.'#wechat_redirect';
+		$url='https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->getConfig('appId').'&redirect_uri='.urlencode($redirectUri).'&response_type=code&scope='.$scope.'&state='.$state.'#wechat_redirect';
 		header('Location: '.$url);
 	}
 
 	public function getOAuthUserInfo($code){
 		$userInfo=null;
-		$getTokenUrl='https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$this->appId.'&secret='.$this->appSecrect.'&code='.$code.'&grant_type=authorization_code';
+		$getTokenUrl='https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$this->getConfig('appId').'&secret='.$this->getConfig('appSecrect').'&code='.$code.'&grant_type=authorization_code';
 		$rpstData=$this->curlRequest($getTokenUrl);
 		$tokenData=json_decode($rpstData['data'],true);
 
