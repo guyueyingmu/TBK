@@ -344,6 +344,12 @@ class Base extends Controller{
 	public function tstx(){
 		$obj=new TBK('128077217','gh_efba84cec87e');
 
+		result=$obj->searchItems('耳机');
+		dump($result);return;
+
+		$itemId=549569972127;
+		$result=$obj->getLink($itemId);
+		dump($result);return;
 
 		$wxObj=new WeChat('gh_efba84cec87e');
 

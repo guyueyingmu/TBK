@@ -134,8 +134,9 @@ class TBK{
 			$data=$result['data']['pageList'];
 			if(!empty($data)){
 				$pvId=$result['info']['pvid'];
+				$this->setConfig(['pvId'=>$pvId]);
 				$count=$result['data']['head']['docsfound'];
-				return ['data'=>$data,'count'=>$count,'pvId'=>$pvId];
+				return ['data'=>$data,'count'=>$count];
 			}
 		}
 		return null;
@@ -159,9 +160,6 @@ class TBK{
 				break;
 			}
 			else{
-				$pvId=$result['pvId'];
-				$this->setConfig(['pvId'=>$pvId]);
-
 				$count=$result['count'];
 				$data=$result['data'];
 				foreach($data as $info){
