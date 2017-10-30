@@ -33,7 +33,7 @@ class TBK{
 		$data=json_decode($result['data'],true);
 
 		if(!empty($data)&&$data['success']){
-			return ['status'=>true,'qrImg'=>'https:'.$data['url'],'lgToken'=>$data['lgToken']];
+			return ['status'=>true,'qrImg'=>$data['url'],'lgToken'=>$data['lgToken']];
 		}
 
 		return ['status'=>false,'msg'=>'CURL Request Error','result'=>$result];
@@ -144,7 +144,7 @@ class TBK{
 	//获取优惠券数据
 	public function getCouponItems($kw,$pgIdx=1){
 		$param=['shopTag'=>'dpyhq','userType'=>1];
-		$result=$this->searchItems($kw,$pgIdx,$param);
+		$result=$this->searchItems($kw,$pgIdx,$param,40);
 		return $result;
 	}
 
@@ -190,7 +190,7 @@ class TBK{
 		$rqstHeader=['referer'=>'https://pub.alimama.com/promo/search/index.htm','x-requested-with'=>'XMLHttpRequest','pragma'=>'no-cache','cache-control'=>'no-cache'];
 		$result=self::curlRequest($url,null,$rqstCookie,$rqstHeader);
 
-		$linkInfo=json_decode($result['data'],true);dump($linkInfo);
+		$linkInfo=json_decode($result['data'],true);
 
 		return !empty($linkInfo)&&isset($linkInfo['data'])&&!empty($linkInfo['data'])?$linkInfo['data']:null;
 	}
@@ -226,6 +226,24 @@ class TBK{
 			}
 		}
 		return $id;
+	}
+
+	public static function parseParam($params){
+		ksort($params);
+		$str='';
+		foreach($params as $k=>$v){
+			if($k!='sign'){
+				$str.=$k.$v;
+			}
+		}
+		unset($k,$v);
+		return $str;
+	}
+
+	public static function getSign($params,$secret){
+		$str=$secret.self::parseParam($params).$secret;
+
+		return strtoupper(md5($str));
 	}
 
 	public static function curlRequest($url,$rqstData=null,$rqstCookie=null,$rqstHeader=null){

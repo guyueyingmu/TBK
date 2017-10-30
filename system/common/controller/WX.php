@@ -1,6 +1,6 @@
 <?php
 
-	namespace app\common\util;
+	namespace app\common\controller;
 
 	use think\Log;
 

@@ -32,23 +32,31 @@ function getSinaShortLink($url){
 	return empty($data)||!isset($data['url_short'])?null:$data['url_short'];
 }
 
-function getRebate($money,$debate){
-	if(is_string($debate)){
-		$debate=json_decode($debate,true);
+function getRebate($money,$rebate){
+	if(is_string($rebate)){
+		$rebate=json_decode($rebate,true);
 	}
 
-	if(empty($debate)||$money<=0){
+	if(empty($rebate)||$money<=0){
 		return 0;
 	}
 
 	$rtn=0;
-	foreach($debate as $key=>$val){
+	foreach($rebate as $key=>$val){
 		if($money>=$val[0]&&$money<$val[1]){
 			$rtn=number_format($money*$key,2);
 		}
 	}
 
 	return $rtn==0?0.01:0;
+}
+
+function getInviteCodeFromUserId($userId){
+	return 10000+$userId;
+}
+
+function getUserIdFromInviteCode($code){
+	return $code-10000;
 }
 
 function curlRequestAPI($url,$rqstData=null){

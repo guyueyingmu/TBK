@@ -15,7 +15,7 @@ class Base extends Controller{
 	private $noLogin=[
 		'base'=>['login','loginSubmit','logout','weChatCgi','getSession','getCache','clearCache','error','clearSession','lgk','tstx'],
 		'client'=>[
-			'index'=>['index'],
+			'index'=>['index','getCouponData'],
 		],
 		'manage'=>[],
 	];
@@ -344,33 +344,12 @@ class Base extends Controller{
 	public function tstx(){
 		$obj=new TBK('128077217','gh_efba84cec87e');
 
-		$rebate=[
-			'0.5'=>[0,2],
-			'0.3'=>[2,10],
-			'0.1'=>[10,100],
-			'0.01'=>[100,1000],
-			'0.001'=>[1000,1000000]
-		];
-		dump(json_encode($rebate));return;
-
-		$id=557690220188;
-		$kw='2017秋冬女装新休闲裤纯色哈伦裤舒适纯棉运动女式九分裤潮束口裤';
-		//$id=550421236994;
-		$kw='纯棉运动女式九分裤';
-
-		$lk=$obj->getLink($id);
-		dump($lk);return;
-
-		$result=$obj->getCouponItems($kw);
-		dump($result);
-
-		return;
 
 		$wxObj=new WeChat('gh_efba84cec87e');
 
-		$content='搜索耳机';
+		$content='个人信息';
 
-		$rst=$wxObj->dealTxtMsg($content,'okLYjvzPSqQ1jdDHDZgM8tL6r_Zg');
+		$rst=$wxObj->dealTxtMsg($content,'okLYjvx7YS3aF1sOdqobjXjeg42w');
 		dump($rst);return;
 	}
 }

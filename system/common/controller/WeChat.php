@@ -332,14 +332,33 @@ class WeChat{
 
 		//个人信息
 		if($content=='个人信息'){
-			$msg=$this->msgForUserInfo($openId);
+			$msg='';
+			$mdl=Loader::model('User');
+			$result=$mdl->getUserInfo($openId,$cfg['originId']);
+			if($result['status']){
+				$data=$result['data'];
+				$msg="━┉┉┉┉∞┉┉┉┉━\n订单总数：".$data['orderCount']."笔\n已完成数：".$data['orderFinished']."笔\n未完成数：".$data['orderUnfinished']."笔\n当前余额：".$data['money']."元\n累计节省：".$data['coupon']."元\n购买返利：".$data['rebate']."元\n好友返利：".$data['friendRebate']."元\n好友个数：".$data['inviteCount']."个\n正在提现：".$data['wding']."元\n累计提现：".$data['wded']."元\n━┉┉┉┉∞┉┉┉┉━\n您的邀请码是【".$data['inviteCode']."】\n━┉┉┉┉∞┉┉┉┉━\n完成订单后，余额会自动增加，余额超过".$cfg['withdrawLimit']."元，输入指令【提现】就可以提现了。只要您邀请的好友将此邀请码发给我，您就可以收到红包哦，而且好友下单结算时您也会\n到一定比例的返利！邀请的好友越多，返利越多，快邀请你的好友加我吧！\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦";
+			}
+			else{
+				$msg=$result['msg'];
+			}
 			return $msg;
 		}
 
 		//邀请码
 		$rgx='/^\d{5}$/';
 		if(preg_match($rgx,$content,$matchResult)){
-			$msg=$this->msgForInvitation($content,$openId);
+			$msg='';
+			$mdl=Loader::model('User');
+			$result=$mdl->dealInvitation($content,$openId,$cfg['originId']);
+
+			if($result['status']){
+				$msg="恭喜，您的邀请码有效！\n赠送您【".$result['data']['invitedMoney']."】元，您的当前余额【".$result['data']['money']."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
+			}
+			else{
+				$msg=$result['msg'];
+			}
+
 			return $msg;
 		}
 
@@ -388,78 +407,6 @@ class WeChat{
 	//处理订单号
 	private function msgForOrder($orderId,$openId){
 		return '敬请期待！';
-	}
-
-	//处理个人信息消息
-	private function msgForUserInfo($openId){
-		return '敬请期待！';
-	}
-
-	//处理邀请码消息
-	private function msgForInvitation($code,$openId){
-		$mdl=Loader::model('User');
-		$invitedInfo=$mdl->getInfo(['where'=>['openId'=>$openId]]);
-		if($invitedInfo['fromUserId']==0){
-			$cfg=$this->getConfig();
-			$fromId=intval($code)-10000;
-			$fromId=$fromId==0?$cfg['userId']:$fromId;
-			$fromInfo=$mdl->getInfo(['where'=>['id'=>$fromId]]);
-			if(!empty($fromInfo)){
-				$money=$this->getInviteMoney();
-				$invitedMoney=$this->getInviteMoney();
-
-				$mdl->startTrans();
-				$result=$mdl->edit(['where'=>['id'=>$invitedInfo['id']],'data'=>['fromUserId'=>$fromId,'money'=>['exp','money+'.$invitedMoney]]]);
-				if($result==false){
-					$mdl->rollback();
-					Log::write('关注赠送失败：'.$mdl->getLastSql());
-					return '请重新发送您的邀请码！';
-				}
-
-				$result=$mdl->edit(['where'=>['id'=>$fromId],'data'=>['money'=>['exp','money+'.$money]]]);
-				if($result===false){
-					$mdl->rollback();
-					Log::write('邀请赠送失败：'.$mdl->getLastSql());
-					return '请重新发送您的邀请码！';
-				}
-
-				$ivtMdl=Loader::model('Invitation');
-				$result=$ivtMdl->add(['userId'=>$fromId,'money'=>$money,'invitedUserId'=>$invitedInfo['id'],'invitedMoney'=>$invitedMoney]);
-				if($result===false){
-					$mdl->rollback();
-					Log::write('关注纪录失败：'.$ivtMdl->getLastSql());
-					return '请重新发送您的邀请码！';
-				}
-
-				$mlMdl=Loader::model('MoneyLog');
-				$mlData=[
-					['type'=>2,'userId'=>$fromId,'money'=>$money,'relatedUserId'=>$invitedInfo['id']],
-					['type'=>1,'userId'=>$invitedInfo['id'],'money'=>$invitedMoney,'relatedUserId'=>$fromId]
-				];
-				$result=$mlMdl->add($mlData,true);
-				if($result===false){
-					$mdl->rollback();
-					Log::write('关注资金纪录失败：'.$mlMdl->getLastSql());
-					return '请重新发送您的邀请码！';
-				}
-
-				$mdl->commit();
-				return "恭喜，您的邀请码有效！\n赠送您【".$invitedMoney."】元，您的当前余额【".$invitedMoney."】元。超过".$cfg['withdrawLimit']."元即可提现.\n━┉┉┉┉∞┉┉┉┉━\n1、输入 【搜索+商品名称】例如:搜索数据线\n2、 将【淘宝客户端挑选好的商品链接】发给我,\n就可以知道获得优惠和返利的具体金额.\n━┉┉┉┉∞┉┉┉┉━\n👉 有问题回复【帮助】\n👉 查看使用教程\n ".$cfg['tutorialLink']."\n━┉┉┉┉∞┉┉┉┉━\n⭕下单后请务必将订单号发送给我哦\n━┉┉┉┉∞┉┉┉┉━";
-			}
-			else{
-				return '您提交的邀请码无效！';
-			}
-		}
-		else{
-			return '您已成功提交过邀请码！';
-		}
-
-		return '';
-	}
-
-	//获取邀请 关注时赠送金额
-	private function getInviteMoney($min=1,$max=50){
-		return mt_rand($min,$max)/100;
 	}
 
 	//处理搜索
@@ -522,6 +469,7 @@ class WeChat{
 		return $msg;
 	}
 
+	//优惠券的链接
 	private function getCouponLink($kw){
 		$cfg=$this->getConfig();
 		$link=trim($cfg['domain'],'/').'/couponList/'.$cfg['originId'].'/'.$kw;

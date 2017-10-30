@@ -2,7 +2,7 @@
 namespace app\client\controller;
 
 use app\common\controller\Base;
-use app\common\util\TBK;
+use app\common\controller\TBK;
 use think\Loader;
 use think\Config;
 use think\Request;
@@ -12,8 +12,8 @@ use think\Log;
 class Index extends Base{
 
 	public function index(Request $request){
-		$originId=$request->param('originId');
-		$kw=$request->param('kw','trim,htmlspecialchars');
+		$originId=$request->param('originId','gh_efba84cec87e');
+		$kw=$request->param('kw','','trim,htmlspecialchars');
 		$this->assign(['originId'=>$originId,'kw'=>$kw]);
 		return view();
 	}
@@ -26,6 +26,9 @@ class Index extends Base{
 			if(empty($kw)){
 				return ['status'=>false,'msg'=>'请输入您要查找的商品！'];
 			}
+
+			$data=[['itemTitle'=>'AAA','img'=>'//img.alicdn.com/bao/uploaded/i1/TB10f.UPVXXXXapXpXXXXXXXXXX_!!0-item_pic.jpg','shopTitle'=>'店铺名称','price'=>88,'coupon'=>3,'leftCount'=>200,'rebate'=>1,'sales'=>40,'couponToken'=>'¥1¥'],['itemTitle'=>'AAA','img'=>'//img.alicdn.com/bao/uploaded/i1/TB10f.UPVXXXXapXpXXXXXXXXXX_!!0-item_pic.jpg','shopTitle'=>'店铺名称','price'=>88,'coupon'=>3,'leftCount'=>200,'rebate'=>1,'sales'=>40,'couponToken'=>'¥2¥'],['itemTitle'=>'AAA','img'=>'//img.alicdn.com/bao/uploaded/i1/TB10f.UPVXXXXapXpXXXXXXXXXX_!!0-item_pic.jpg','shopTitle'=>'店铺名称','price'=>88,'coupon'=>3,'leftCount'=>200,'rebate'=>1,'sales'=>40,'couponToken'=>'¥3¥'],['itemTitle'=>'AAA','img'=>'//img.alicdn.com/bao/uploaded/i1/TB10f.UPVXXXXapXpXXXXXXXXXX_!!0-item_pic.jpg','shopTitle'=>'店铺名称','price'=>88,'coupon'=>3,'leftCount'=>200,'rebate'=>1,'sales'=>40,'couponToken'=>'¥4¥']];
+			return ['status'=>true,'data'=>$data];
 
 			$mdl=Loader::model('Account');
 			if(!empty($originId)){
@@ -53,7 +56,7 @@ class Index extends Base{
 				foreach($data['data'] as $info){
 					$linkInfo=$obj->getLink($info['auctionId']);
 					if(isset($linkInfo['couponLinkTaoToken'])&&!empty($linkInfo['couponLinkTaoToken'])){
-						$itemData[]=['img'=>$info['pictUrl'],'businessName'=>$info['nick'],'itemId'=>$info['auctionId'],'price'=>$info['zkPrice'],'coupon'=>$info['couponAmount'],'leftCount'=>$info['couponLeftCount'],'rebate'=>getDebate($info['tkCommFee'],$accountInfo['rebate']),'couponToken'=>$linkInfo['couponLinkTaoToken']];
+						$itemData[]=['itemTitle'=>strip_tags($info['title']),'img'=>$info['pictUrl'],'shopTitle'=>$info['shopTitle'],'itemId'=>$info['auctionId'],'price'=>$info['zkPrice'],'coupon'=>$info['couponAmount'],'leftCount'=>$info['couponLeftCount'],'rebate'=>getRebate($info['tkCommFee'],$accountInfo['rebate']),'sales'=>$info['biz30day'],'couponToken'=>$linkInfo['couponLinkTaoToken']];
 					}
 				}
 
