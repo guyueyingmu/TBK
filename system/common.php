@@ -21,13 +21,15 @@ function dataVerify($data,$keyAry){
 
 function getSinaShortLink($url){
 	$sourceAry=[3271760578,2815391962,31641035];
-	$source=mt_rand(0,count($sourceAry)-1);
+	$idx=mt_rand(0,count($sourceAry)-1);
 
-	$param=['source'=>$source,'url_long'=>$url];
+	$param=['source'=>$sourceAry[$idx],'url_long'=>$url];
 	$url='http://api.t.sina.com.cn/short_url/shorten.json?'.http_build_query($param);
 
 	$result=curlRequestAPI($url);
 	$data=json_decode($result['data'],true);
+
+	$data=empty($data)?null:$data[0];
 
 	return empty($data)||!isset($data['url_short'])?null:$data['url_short'];
 }

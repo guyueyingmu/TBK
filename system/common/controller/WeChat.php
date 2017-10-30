@@ -473,8 +473,8 @@ class WeChat{
 	private function getCouponLink($kw){
 		$cfg=$this->getConfig();
 		$link=trim($cfg['domain'],'/').'/couponList/'.$cfg['originId'].'/'.$kw;
-		$shortLing=getSinaShortLink($link);
-		return $shortLing;
+		$shortLink=getSinaShortLink($link);
+		return $shortLink;
 	}
 
 	//回复文本信息
